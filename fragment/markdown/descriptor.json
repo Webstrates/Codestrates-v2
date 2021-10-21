@@ -1,0 +1,10 @@
+{
+    "description": "Markdown Fragment for Codestrates",
+    "dependencies": [
+        "#fragment_core",
+        "/wpm_js_libs/?raw #Showdown"
+    ],
+    "license": "Apache 2.0 (w/MIT)",
+    "assets": [],
+    "version": "1"
+}

@@ -1,0 +1,13 @@
+{
+    "description": "The base fragment core required by all fragments",
+    "dependencies": [
+        "/wpm_js_libs/?raw #cQuery",
+        "/wpm_js_libs/?raw #Observer",
+        "/wpm_js_libs/?raw #fastdiff",
+        "/wpm_js_libs/?raw #diffHTML",
+        "/wpm_common/?raw #UUIDGenerator"
+    ],
+    "license": "Apache 2.0",
+    "assets": [],
+    "version": "1"
+}

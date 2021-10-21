@@ -1,0 +1,13 @@
+.decorationsOverviewRuler {
+    display: none;
+}
+
+.otherCursor::before {
+    content: " ";
+    width: 2px;
+    height: 100%;
+    display: block;
+}
+
+.otherSelection {
+}

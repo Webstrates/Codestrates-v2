@@ -1,0 +1,12 @@
+{
+    "description": "Python Fragment for Codestrates",
+    "dependencies": [
+        "#fragment_core"
+    ],
+    "optionalDependencies": [
+        "/wpm_js_libs/?raw #brython"
+    ],
+    "license": "Apache 2.0 (w/BSD-3)",
+    "assets": [],
+    "version": "1"
+}

@@ -1,0 +1,10 @@
+{
+    "description": "Javascript Fragment for Codestrates",
+    "dependencies": [
+        "#fragment_core",
+        "#js-eval-engine"
+    ],
+    "license": "Apache 2.0",
+    "assets": [],
+    "version": "1"
+}

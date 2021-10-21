@@ -1,0 +1,11 @@
+{
+    "description": "When.js Fragment for Codestrates",
+    "dependencies": [
+        "#fragment_core",
+        "#js-eval-engine",
+        "/when-js-repos/?raw #when-js-engine"
+    ],
+    "license": "Apache 2.0",
+    "assets": [],
+    "version": "1.0"
+}

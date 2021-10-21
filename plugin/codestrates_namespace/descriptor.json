@@ -1,0 +1,10 @@
+{
+    "description": "Places some codestrates functionallity into Codestrates namespace, for easy access",
+    "dependencies": [
+        "#editor_core",
+        "#fragment_core"
+    ],
+    "license": "Apache 2.0",
+    "assets": [],
+    "version": "1"
+}

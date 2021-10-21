@@ -1,0 +1,11 @@
+{
+    "description": "Ruby Fragment for Codestrates",
+    "dependencies": [
+        "#fragment_core",
+        "#js-eval-engine",
+        "/wpm_js_libs/?raw #opal"
+    ],
+    "license": "Apache 2.0 (w/MIT)",
+    "assets": [],
+    "version": "1"
+}

@@ -1,0 +1,9 @@
+{
+    "description": "CSS Fragment for Codestrates",
+    "dependencies": [
+        "#fragment_core"
+    ],
+    "license": "Apache 2.0",
+    "assets": [],
+    "version": "1"
+}

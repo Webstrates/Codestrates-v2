@@ -1,0 +1,11 @@
+{
+    "description": "Typescript Fragment for Codestrates",
+    "dependencies": [
+        "#fragment_core",
+        "#js-eval-engine",
+        "/wpm_js_libs/?raw #typescript"
+    ],
+    "license": "Apache 2.0",
+    "assets": [],
+    "version": "1"
+}

@@ -1,0 +1,11 @@
+{
+    "friendlyName": "EventSystem",
+    "description": "Can register and fire events",
+    "dependencies": [],
+    "assets": [],
+    "version": "0.1",
+    "license": "Apache 2.0",
+    "changelog": {
+        "0.1": "Initial version"
+    }
+}
