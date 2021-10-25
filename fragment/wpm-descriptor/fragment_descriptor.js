@@ -74,6 +74,7 @@ class DescriptorFragment extends Fragment {
     static type() {
         return "wpm/descriptor";
     }
-}; window.DescriptorFragment = DescriptorFragment;
+}; 
 
+window.DescriptorFragment = DescriptorFragment;
 Fragment.registerFragmentType(DescriptorFragment);
