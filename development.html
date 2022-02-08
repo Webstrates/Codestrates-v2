@@ -939,8 +939,12 @@ class Fragment {
 
             let oldTransient = cQuery("transient.autoDom#" + this.uuid);
             if(oldTransient.length > 0) {
-                let theCode = diff.toString(autoDomContent);
-                diff.innerHTML(oldTransient[0], theCode, { parser: { strict: true } });
+                try {
+                    diff.innerHTML(oldTransient[0], autoDomContent, { parser: { strict: true } });
+                } catch (ex){
+                    console.error("Failed to perform autoDOM diffing", ex);
+                    diff.release(oldTransient[0]); // Reset state trackers since the patch was not applied
+                }
 
                 function cssPath(element, path= []) {
                     if(element.parentNode == null) {
