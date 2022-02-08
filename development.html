@@ -948,18 +948,13 @@ class Fragment {
 
                 function cssPath(element, path= []) {
                     if(element.parentNode == null) {
-                        //Remove transient from stack
-                        path.pop();
-
+                        // Document fragment is the top node
                         return path.reverse().join(" > ");
                     }
 
                     const parent = element.parentNode;
-
                     const childIndex = Array.from(parent.children).indexOf(element) + 1;
-
                     path.push(element.nodeName.toLowerCase()+":nth-child("+childIndex+")");
-
                     return cssPath(parent, path);
                 }
 
