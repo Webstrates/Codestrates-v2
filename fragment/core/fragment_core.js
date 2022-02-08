@@ -665,21 +665,10 @@ class Fragment {
         try {
             let autoDomContent = await this.createAutoDom();
 
-            let transient = cQuery("<transient></transient>");
-            transient[0].setAttribute("id", this.uuid);
-            transient.addClass("autoDom");
-
-            this.html[0].classList.forEach((c)=>{
-                transient.addClass(c);
-            });
-
-            if (autoDomContent != null && autoDomContent !== "") {
-                transient.append(autoDomContent);
-            }
-
             let oldTransient = cQuery("transient.autoDom#" + this.uuid);
             if(oldTransient.length > 0) {
-                diff.innerHTML(oldTransient[0], Array.from(transient[0].childNodes));
+                let theCode = diff.toString(autoDomContent);
+                diff.innerHTML(oldTransient[0], theCode, { parser: { strict: true } });
 
                 function cssPath(element, path= []) {
                     if(element.parentNode == null) {
@@ -699,11 +688,22 @@ class Fragment {
                 }
 
                 // Update innerHTML for each template, as this is not part of the dom, and would not be updated otherwise
-                transient.find("template").forEach((template)=>{
+                cQuery(autoDomContent).find("template").forEach((template)=>{
                     let path = cssPath(template);
-                    oldTransient[0].querySelector(path).innerHTML = transient[0].querySelector(path).innerHTML
+                    oldTransient[0].querySelector(path).innerHTML = autoDomContent.querySelector(path).innerHTML;
                 });
             } else {
+                let transient = cQuery("<transient></transient>");
+                transient[0].setAttribute("id", this.uuid);
+                transient.addClass("autoDom");
+
+                this.html[0].classList.forEach((c)=>{
+                    transient.addClass(c);
+                });
+
+                if (autoDomContent != null && autoDomContent !== "") {
+                    transient.append(autoDomContent);
+                }                
                 this.html[0].parentNode.insertBefore(transient[0], this.html[0].nextSibling);
             }
 
