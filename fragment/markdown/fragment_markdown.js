@@ -47,7 +47,13 @@ class MarkdownFragment extends Fragment {
     require(options) {
         return new Promise((resolve, reject)=>{
             requirejs(["showdown/showdown.min"], (showdown)=>{
-                resolve(new showdown.Converter().makeHtml(this.raw));
+                resolve(new showdown.Converter({
+                    "strikethrough": true,
+                    "tables": true,
+                    "smoothLivePreview": true,
+                    "openLinksInNewWindow": true,
+
+                }).makeHtml(this.raw));
             });
         });
     }
