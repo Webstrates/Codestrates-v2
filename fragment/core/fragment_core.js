@@ -667,11 +667,11 @@ class Fragment {
 
             let oldTransient = cQuery("transient.autoDom#" + this.uuid);
             if(oldTransient.length > 0) {
-                oldTransient.setAttribute("class", "autoDom");
+                oldTransient[0].setAttribute("class", "autoDom");
 
                 //Fix missing classes
                 this.html[0].classList.forEach((c)=>{
-                    oldTransient.addClass(c);
+                    oldTransient[0].addClass(c);
                 });
 
                 try {
