@@ -50,16 +50,15 @@ class PreviewEditor extends Editor {
     }
 
     async updatePreview() {
+        let fragmentContent = await this.fragment.createAutoDom();
         try {
-            let fragmentContent = await this.fragment.createAutoDom();
-
-            this.editorDiv.empty();
-            if (fragmentContent != null && fragmentContent !== "") {
-                this.editorDiv.append(fragmentContent);
+           if (fragmentContent !== null) {
+                diff.innerHTML(this.editorDiv[0], fragmentContent, { parser: { strict: true } });
             }
-        } catch(e) {
-            console.warn("Unable to update preview: ", e);
-        }
+        } catch (ex){
+            console.error("Failed to perform preview diffing", ex);
+            diff.release(this.editorDiv[0]); // Reset state trackers since the patch was not applied
+        }  
     }
     
     onSizeChanged() {
