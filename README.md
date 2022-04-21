@@ -5,11 +5,4 @@ Codestrates builds on [Webstrates](http://webstrates.net). A web-page served fro
 ## Installation
 
 To use Codestrates you need access to a [Webstrates](http://webstrates.net) server. Refer to the [Webstrates documentation](http://webstrates.github.io) for instructions on how to set one up.
-To create a new codestrate on a Webstrates server go to:
-
-```
-No stable release yet
-```
-
-You can also [click here, TODO]() to create a new codestrate on the [demo.webstrates.net](demo.webstrates.net) server.
-
+To create a new codestrate on a Webstrates server check the prototypes folder for more instructions.
