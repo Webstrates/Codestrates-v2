@@ -2,7 +2,7 @@
     "description": "Generates previews based on Fragment autoDOM",
     "dependencies": [
         "#editor_core",
-        "/wpm_js_libs/?raw #diffHTML"        
+        "wpm_js_libs #diffHTML"
     ],
     "license": "Apache 2.0",
     "assets": [],

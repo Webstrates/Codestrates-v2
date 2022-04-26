@@ -1,7 +1,7 @@
 {
     "description": "Plugin to use Ace Editor",
     "dependencies": [
-        "/wpm_js_libs/?raw #ace_editor",
+        "wpm_js_libs #ace_editor",
         "#editor_core"
     ],
     "license": "Apache 2.0 (w/BSD)",

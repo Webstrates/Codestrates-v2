@@ -1,11 +1,11 @@
 {
     "description": "The base fragment core required by all fragments",
     "dependencies": [
-        "/wpm_js_libs/?raw #cQuery",
-        "/wpm_js_libs/?raw #Observer",
-        "/wpm_js_libs/?raw #fastdiff",
-        "/wpm_js_libs/?raw #diffHTML",
-        "/wpm_js_libs/?raw #UUIDGenerator"
+        "wpm_js_libs #cQuery",
+        "wpm_js_libs #Observer",
+        "wpm_js_libs #fastdiff",
+        "wpm_js_libs #diffHTML",
+        "wpm_js_libs #UUIDGenerator"
     ],
     "license": "Apache 2.0",
     "assets": [],

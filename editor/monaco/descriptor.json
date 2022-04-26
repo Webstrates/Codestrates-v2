@@ -1,7 +1,7 @@
 {
     "description": "Plugin to use Monaco Editor",
     "dependencies": [
-        "/wpm_js_libs/?raw #monaco_editor",
+        "wpm_js_libs #monaco_editor",
         "#editor_core"
     ],
     "license": "Apache 2.0 (w/MIT)",

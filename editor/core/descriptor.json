@@ -1,8 +1,8 @@
 {
     "description": "The base editor core required by all Codestrate editors",
     "dependencies": [
-        "/wpm_js_libs/?raw #cQuery",
-        "/wpm_js_libs/?raw #CaviTouch",
+        "wpm_js_libs #cQuery",
+        "wpm_js_libs #CaviTouch",
         "#fragment_core",
         "#EventSystem"
     ],

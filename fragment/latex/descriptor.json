@@ -2,7 +2,7 @@
     "description": "LaTeX Fragment for Codestrates",
     "dependencies": [
         "#fragment_core",
-        "/wpm_js_libs/?raw #latex_js"
+        "wpm_js_libs #latex_js"
     ],
     "license": "Apache 2.0 (w/MIT)",
     "assets": [],

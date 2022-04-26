@@ -3,7 +3,7 @@
     "dependencies": [
         "#fragment_core",
         "#js-eval-engine",
-        "/wpm_js_libs/?raw #fengari"
+        "wpm_js_libs #fengari"
     ],
     "license": "Apache 2.0 (w/MIT)",
     "assets": [],

@@ -1,7 +1,7 @@
 {
     "description": "Plugin to use Codemirror Editor",
     "dependencies": [
-        "/wpm_js_libs/?raw #codemirror_editor",
+        "wpm_js_libs #codemirror_editor",
         "#editor_core"
     ],
     "license": "Apache 2.0 (w/MIT)",

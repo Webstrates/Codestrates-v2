@@ -250,11 +250,11 @@ Error.stackTraceLimit = Infinity;
 {
     "description": "The base fragment core required by all fragments",
     "dependencies": [
-        "https://raw.githubusercontent.com/Webstrates/WebstrateLibraryRepository/master/libraries.html #cQuery",
-        "https://raw.githubusercontent.com/Webstrates/WebstrateLibraryRepository/master/libraries.html #Observer",
-        "https://raw.githubusercontent.com/Webstrates/WebstrateLibraryRepository/master/libraries.html #fastdiff",
-        "https://raw.githubusercontent.com/Webstrates/WebstrateLibraryRepository/master/libraries.html #diffHTML",
-        "https://raw.githubusercontent.com/Webstrates/WebstrateLibraryRepository/master/libraries.html #UUIDGenerator"
+        "wpm_js_libs #cQuery",
+        "wpm_js_libs #Observer",
+        "wpm_js_libs #fastdiff",
+        "wpm_js_libs #diffHTML",
+        "wpm_js_libs #UUIDGenerator"
     ],
     "license": "Apache 2.0",
     "assets": [],
@@ -2039,7 +2039,7 @@ Fragment.registerFragmentType(JSONFragment);
     "description": "LaTeX Fragment for Codestrates",
     "dependencies": [
         "#fragment_core",
-        "https://raw.githubusercontent.com/Webstrates/WebstrateLibraryRepository/master/libraries.html #latex_js"
+        "wpm_js_libs #latex_js"
     ],
     "license": "Apache 2.0 (w/MIT)",
     "assets": [],
@@ -2356,7 +2356,7 @@ Fragment.registerFragmentType(CSSFragment);
     "description": "SCSS Fragment for Codestrates",
     "dependencies": [
         "#fragment_core",
-        "https://raw.githubusercontent.com/Webstrates/WebstrateLibraryRepository/master/libraries.html #sass_js"
+        "wpm_js_libs #sass_js"
     ],
     "license": "Apache 2.0 (w/MIT)",
     "assets": [],
@@ -2544,7 +2544,7 @@ Fragment.registerFragmentType(SVGFragment);
         "#fragment_core"
     ],
     "optionalDependencies": [
-        "https://raw.githubusercontent.com/Webstrates/WebstrateLibraryRepository/master/libraries.html #brython"
+        "wpm_js_libs #brython"
     ],
     "license": "Apache 2.0 (w/BSD-3)",
     "assets": [],
@@ -2749,7 +2749,7 @@ Fragment.registerFragmentType(PythonFragment);
     "description": "Markdown Fragment for Codestrates",
     "dependencies": [
         "#fragment_core",
-        "https://raw.githubusercontent.com/Webstrates/WebstrateLibraryRepository/master/libraries.html #Showdown"
+        "wpm_js_libs #Showdown"
     ],
     "license": "Apache 2.0 (w/MIT)",
     "assets": [],
@@ -2840,7 +2840,7 @@ Fragment.registerFragmentType(MarkdownFragment);
     "dependencies": [
         "#fragment_core",
         "#js-eval-engine",
-        "https://raw.githubusercontent.com/Webstrates/WebstrateLibraryRepository/master/libraries.html #typescript"
+        "wpm_js_libs #typescript"
     ],
     "license": "Apache 2.0",
     "assets": [],
@@ -2983,7 +2983,7 @@ Fragment.registerFragmentType(TypescriptFragment);
     "dependencies": [
         "#fragment_core",
         "#js-eval-engine",
-        "https://raw.githubusercontent.com/Webstrates/WebstrateLibraryRepository/master/libraries.html #opal"
+        "wpm_js_libs #opal"
     ],
     "license": "Apache 2.0 (w/MIT)",
     "assets": [],
@@ -3124,7 +3124,7 @@ Fragment.registerFragmentType(RubyFragment);
     "dependencies": [
         "#fragment_core",
         "#js-eval-engine",
-        "https://raw.githubusercontent.com/Webstrates/WebstrateLibraryRepository/master/libraries.html #fengari"
+        "wpm_js_libs #fengari"
     ],
     "license": "Apache 2.0 (w/MIT)",
     "assets": [],
@@ -3471,8 +3471,8 @@ Fragment.registerFragmentType(WhenJSFragment).then(()=>{
 {
     "description": "The base editor core required by all Codestrate editors",
     "dependencies": [
-        "https://raw.githubusercontent.com/Webstrates/WebstrateLibraryRepository/master/libraries.html #cQuery",
-        "https://raw.githubusercontent.com/Webstrates/WebstrateLibraryRepository/master/libraries.html #CaviTouch",
+        "wpm_js_libs #cQuery",
+        "wpm_js_libs #CaviTouch",
         "#fragment_core",
         "#EventSystem"
     ],
@@ -4175,7 +4175,7 @@ class Editor {
 {
     "description": "Plugin to use Monaco Editor",
     "dependencies": [
-        "https://raw.githubusercontent.com/Webstrates/WebstrateLibraryRepository/master/libraries.html #monaco_editor",
+        "wpm_js_libs #monaco_editor",
         "#editor_core"
     ],
     "license": "Apache 2.0 (w/MIT)",
@@ -4608,7 +4608,7 @@ EditorManager.registerEditor(MonacoEditor);
 {
     "description": "Plugin to use Codemirror Editor",
     "dependencies": [
-        "https://raw.githubusercontent.com/Webstrates/WebstrateLibraryRepository/master/libraries.html #codemirror_editor",
+        "wpm_js_libs #codemirror_editor",
         "#editor_core"
     ],
     "license": "Apache 2.0 (w/MIT)",
@@ -4877,7 +4877,7 @@ EditorManager.registerEditor(CodemirrorEditor);
 {
     "description": "Plugin to use Ace Editor",
     "dependencies": [
-        "https://raw.githubusercontent.com/Webstrates/WebstrateLibraryRepository/master/libraries.html #ace_editor",
+        "wpm_js_libs #ace_editor",
         "#editor_core"
     ],
     "license": "Apache 2.0 (w/BSD)",
@@ -5061,7 +5061,7 @@ EditorManager.registerEditor(AceEditor);
     "description": "Generates previews based on Fragment autoDOM",
     "dependencies": [
         "#editor_core",
-        "https://raw.githubusercontent.com/Webstrates/WebstrateLibraryRepository/master/libraries.html #diffHTML"        
+        "wpm_js_libs #diffHTML"
     ],
     "license": "Apache 2.0",
     "assets": [],

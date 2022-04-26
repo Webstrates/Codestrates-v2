@@ -3,7 +3,7 @@
     "dependencies": [
         "#fragment_core",
         "#js-eval-engine",
-        "/wpm_js_libs/?raw #opal"
+        "wpm_js_libs #opal"
     ],
     "license": "Apache 2.0 (w/MIT)",
     "assets": [],

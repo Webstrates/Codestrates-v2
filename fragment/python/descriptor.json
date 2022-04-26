@@ -4,7 +4,7 @@
         "#fragment_core"
     ],
     "optionalDependencies": [
-        "/wpm_js_libs/?raw #brython"
+        "wpm_js_libs #brython"
     ],
     "license": "Apache 2.0 (w/BSD-3)",
     "assets": [],

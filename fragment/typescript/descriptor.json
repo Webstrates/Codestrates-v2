@@ -3,7 +3,7 @@
     "dependencies": [
         "#fragment_core",
         "#js-eval-engine",
-        "/wpm_js_libs/?raw #typescript"
+        "wpm_js_libs #typescript"
     ],
     "license": "Apache 2.0",
     "assets": [],
