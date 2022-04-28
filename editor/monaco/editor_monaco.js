@@ -135,8 +135,13 @@ class MonacoEditor extends Editor {
                 selectionHighlight: false,
                 accessibilitySupport: "off",
                 folding: false,
-                renderIndentGuides: false,
+                guides: {
+                    bracketPairs: true
+                },
                 readOnly: this.options.readOnly,
+                bracketPairColorization: {
+                    enabled: true
+                },
                 scrollbar: {
                     alwaysConsumeMouseWheel: false,
                     horizontal: 'auto',
