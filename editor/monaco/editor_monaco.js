@@ -377,6 +377,12 @@ class MonacoEditor extends Editor {
         super.unload();
     }
 
+    setWordwrap(state) {
+        if(this.editor != null) {
+            this.editor.updateOptions({"wordWrap": state?"on":"off"});
+        }
+    }
+
     static types() {
         return [
             "text/javascript",

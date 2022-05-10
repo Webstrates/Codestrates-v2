@@ -3781,6 +3781,11 @@ class Editor {
         });
     }
 
+    setWordwrap(state) {
+        //Override me
+        console.warn("Changing word wrap is not supported in this editor:"+this.constructor.name);
+    }
+
     waitForDisplay() {
         let self = this;
 
@@ -4563,6 +4568,12 @@ class MonacoEditor extends Editor {
         }
 
         super.unload();
+    }
+
+    setWordwrap(state) {
+        if(this.editor != null) {
+            this.editor.updateOptions({"wordWrap": state?"on":"off"});
+        }
     }
 
     static types() {

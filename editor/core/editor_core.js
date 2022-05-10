@@ -295,6 +295,11 @@ class Editor {
         });
     }
 
+    setWordwrap(state) {
+        //Override me
+        console.warn("Changing word wrap is not supported in this editor:"+this.constructor.name);
+    }
+
     waitForDisplay() {
         let self = this;
 
