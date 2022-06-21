@@ -251,6 +251,19 @@ class MonacoEditor extends Editor {
             }
         }
     }
+    
+    setTheme(themeName){
+        // STUB: Monaco does not support individual themes yet
+        // See this on why this will change all editors simultaneously: https://github.com/Microsoft/monaco-editor/issues/338
+        switch (themeName){
+            case "dark":
+                // this.editor._themeService
+                monaco.editor.setTheme("vs-dark");
+                break
+            default:
+                monaco.editor.setTheme("vs");
+        }
+    }
 
     updateForeignSelections(remoteClient = null) {
         let self = this;
@@ -390,6 +403,7 @@ class MonacoEditor extends Editor {
             "text/whenjs",
             "text/whenv2",
             "text/varv",
+            "text/varvscript",
             "text/python",
             "text/markdown",
             "text/html",

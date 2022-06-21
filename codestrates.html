@@ -4088,6 +4088,10 @@ class Editor {
         //Override in subclass
         console.warn("insertAtSelection not overridden", this, text);
     }
+    
+    setTheme(themeName){
+        console.warn("editor.setTheme not supported for ", themeName, this);
+    }
 
     /**
      * Unloads this editor
@@ -4444,6 +4448,19 @@ class MonacoEditor extends Editor {
             }
         }
     }
+    
+    setTheme(themeName){
+        // STUB: Monaco does not support individual themes yet
+        // See this on why this will change all editors simultaneously: https://github.com/Microsoft/monaco-editor/issues/338
+        switch (themeName){
+            case "dark":
+                // this.editor._themeService
+                monaco.editor.setTheme("vs-dark");
+                break
+            default:
+                monaco.editor.setTheme("vs");
+        }
+    }
 
     updateForeignSelections(remoteClient = null) {
         let self = this;
@@ -4583,6 +4600,7 @@ class MonacoEditor extends Editor {
             "text/whenjs",
             "text/whenv2",
             "text/varv",
+            "text/varvscript",
             "text/python",
             "text/markdown",
             "text/html",
@@ -5374,11 +5392,25 @@ class EventSystem {
         let preventDefault = false;
 
         let callbacks = EventSystem.callbackMap.get(eventName);
+        let waitPromises = [];
         if(callbacks != null) {
             for(let callback of callbacks) {
-                if(await callback(event) === true) {
+                let result = callback(event);
+                if(result instanceof Promise) {
+                    waitPromises.push(result);
+                } else if(result === true) {
                     preventDefault = true;
                 }
+            }
+        }
+
+        if(waitPromises.length > 0) {
+            let waitResult = await Promise.all(waitPromises);
+
+            if (waitResult.find((result) => {
+                return result === true
+            })) {
+                preventDefault = true;
             }
         }
 

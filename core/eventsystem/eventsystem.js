@@ -104,11 +104,25 @@ class EventSystem {
         let preventDefault = false;
 
         let callbacks = EventSystem.callbackMap.get(eventName);
+        let waitPromises = [];
         if(callbacks != null) {
             for(let callback of callbacks) {
-                if(await callback(event) === true) {
+                let result = callback(event);
+                if(result instanceof Promise) {
+                    waitPromises.push(result);
+                } else if(result === true) {
                     preventDefault = true;
                 }
+            }
+        }
+
+        if(waitPromises.length > 0) {
+            let waitResult = await Promise.all(waitPromises);
+
+            if (waitResult.find((result) => {
+                return result === true
+            })) {
+                preventDefault = true;
             }
         }
 

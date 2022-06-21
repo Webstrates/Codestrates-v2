@@ -602,6 +602,10 @@ class Editor {
         //Override in subclass
         console.warn("insertAtSelection not overridden", this, text);
     }
+    
+    setTheme(themeName){
+        console.warn("editor.setTheme not supported for ", themeName, this);
+    }
 
     /**
      * Unloads this editor
