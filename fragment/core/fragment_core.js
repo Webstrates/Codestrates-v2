@@ -191,6 +191,10 @@ class Fragment {
         }
     }
 
+    /**
+     * @private
+     * @param context
+     */
     triggerFragmentChanged(context) {
         this.fragmentChangedCallbacks.slice().forEach((callback) => {
             try {
@@ -287,7 +291,16 @@ class Fragment {
     }
 
     /**
-     * The raw representation of this fragment
+     * The raw representation of this fragment, can be used to set/get the raw value.
+     *
+     * @example
+     * //Get the raw value of a fragment
+     * let fragmentValue = myFragment.raw;
+     *
+     * @example
+     * //Set the raw value of a fragment
+     * myFragment.raw = myNewFragmentValue;
+     *
      * @type {string}
      */
     get raw() {
