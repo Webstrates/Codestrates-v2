@@ -104,25 +104,18 @@ class EventSystem {
         let preventDefault = false;
 
         let callbacks = EventSystem.callbackMap.get(eventName);
-        let waitPromises = [];
+
         if(callbacks != null) {
-            for(let callback of callbacks) {
-                let result = callback(event);
-                if(result instanceof Promise) {
-                    waitPromises.push(result);
-                } else if(result === true) {
+            for (let callback of callbacks) {
+                let callbackReturn = callback(event);
+
+                let result = null;
+
+                result = (callbackReturn instanceof Promise)?await callbackReturn:callbackReturn;
+
+                if (result === true) {
                     preventDefault = true;
                 }
-            }
-        }
-
-        if(waitPromises.length > 0) {
-            let waitResult = await Promise.all(waitPromises);
-
-            if (waitResult.find((result) => {
-                return result === true
-            })) {
-                preventDefault = true;
             }
         }
 
