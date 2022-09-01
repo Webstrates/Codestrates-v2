@@ -158,7 +158,7 @@ class EditorManager {
                     }
                 }
             } else {
-                let editors = EditorManager.editorTypes.get(fragment.type);
+                let editors = EditorManager.editorTypes.get(fragment.type);                
 
                 if(editors == null) {
                     editors = new Set();
@@ -170,8 +170,7 @@ class EditorManager {
                     return editor !== PreviewEditor;
                 });
 
-                if(availableEditors.size > 0) {
-
+                if(availableEditors.length > 0) {
                     //TODO: Maybee not just use the first editor available?
                     result.push( new (availableEditors[0])(fragment, config));
                 }
