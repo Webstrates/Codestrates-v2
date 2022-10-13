@@ -4453,26 +4453,7 @@ class MonacoEditor extends Editor {
     onSizeChanged() {
         if (typeof this.editor!=="undefined"){
 
-            let bounds = this.editorDiv[0].getBoundingClientRect();
-
-            let height = Math.floor(bounds.height);
-            let width = Math.floor(bounds.width);
-
-            //Align for 2 lines to much?
-            let lineHeight = 19;
-
-            let viewLines = this.editorDiv.find("div.view-line");
-
-            if (viewLines.length > 0) {
-                lineHeight = viewLines[0].offsetHeight;
-            }
-
-            height -= 3 * lineHeight;
-
-            this.editor.layout({
-                width,
-                height
-            });
+            this.editor.layout();
 
             if(this.mode === "full") {
                 this.updateSize();
