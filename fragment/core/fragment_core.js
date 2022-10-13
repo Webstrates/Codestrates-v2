@@ -583,7 +583,7 @@ class Fragment {
      * @private
      */
     async onFragmentsLoaded() {
-        if (this.auto) {
+        if (this.auto && !Fragment.disableAutorun) {
             await this.insertAutoDom();
         }
     }
@@ -619,7 +619,7 @@ class Fragment {
         let self = this;
 
         this.registerOnFragmentChangedHandler((context) => {
-            if (self.auto) {
+            if (self.auto && !Fragment.disableAutorun) {
                 self.insertAutoDom();
             }
         });
@@ -639,7 +639,7 @@ class Fragment {
             return;
         }
 
-        if (auto) {
+        if (auto && !Fragment.disableAutorun) {
             this.insertAutoDom();
         } else {
             this.clearAutoDom();
@@ -664,15 +664,15 @@ class Fragment {
     }
 
     /**
-     * Ask this fragment to insert its automatic dom
+     * Ask this fragment to insert its automatic dom (regardless of Fragment.disableAutorun)
      * @ignore
      * @returns {Promise<void>} - Promise that resolves when the automatic dom is inserted into the document
      */
     async insertAutoDom() {
-        if(!this.supportsAutoDom() || Fragment.disableAutorun) {
+        if(!this.supportsAutoDom()) {
             return;
         }
-
+        
         let self = this;
 
         try {
