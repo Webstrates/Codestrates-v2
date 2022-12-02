@@ -54,6 +54,7 @@ class Fragment {
         this.uuid = UUIDGenerator.generateUUID("fragment-");
 
         //Setup autodom and make it able to wait until it is complete.
+        this.autoDomDirty = true;
         this.setupAutoDomHandling();
 
         this.html[0].setAttribute("transient-fragment-uuid", this.uuid);
@@ -620,6 +621,7 @@ class Fragment {
 
         this.registerOnFragmentChangedHandler((context) => {
             if (self.auto && !Fragment.disableAutorun) {
+                self.autoDomDirty = true;
                 self.insertAutoDom();
             }
         });
@@ -672,13 +674,19 @@ class Fragment {
         if(!this.supportsAutoDom()) {
             return;
         }
+
+        let oldTransient = cQuery("transient.autoDom#" + this.uuid);
+
+        if(oldTransient.length > 0 && !this.autoDomDirty) {
+            console.log("Not inserting autoDom, as it is already present and not flagged dirty");
+            return;
+        }
         
         let self = this;
 
         try {
             let autoDomContent = await this.createAutoDom();
 
-            let oldTransient = cQuery("transient.autoDom#" + this.uuid);
             if(oldTransient.length > 0) {
                 oldTransient[0].setAttribute("class", "autoDom");
 
@@ -726,6 +734,8 @@ class Fragment {
                 this.html[0].parentNode.insertBefore(transient[0], this.html[0].nextSibling);
             }
 
+            this.autoDomDirty = false;
+
         } catch(e) {
             console.warn("Unable to insertAutoDom: ", e);
         }
@@ -740,6 +750,7 @@ class Fragment {
             return;
         }
         cQuery("transient.autoDom#" + this.uuid).remove();
+        this.autoDomDirty = true;
     }
 
     /**
