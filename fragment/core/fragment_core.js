@@ -689,6 +689,8 @@ class Fragment {
             try {
                 let autoDomContent = await this.createAutoDom();
 
+                let oldTransient = cQuery("transient.autoDom#" + this.uuid);
+
                 if(oldTransient.length > 0) {
                     oldTransient[0].setAttribute("class", "autoDom");
 
