@@ -670,75 +670,79 @@ class Fragment {
      * @ignore
      * @returns {Promise<void>} - Promise that resolves when the automatic dom is inserted into the document
      */
-    async insertAutoDom() {
+    insertAutoDom() {
         if(!this.supportsAutoDom()) {
             return;
         }
 
-        let oldTransient = cQuery("transient.autoDom#" + this.uuid);
-
-        if(oldTransient.length > 0 && !this.autoDomDirty) {
+        if(!this.autoDomDirty) {
             console.log("Not inserting autoDom, as it is already present and not flagged dirty");
             return;
         }
-        
+
         let self = this;
 
-        try {
-            let autoDomContent = await this.createAutoDom();
+        this.autoDomDirty = false;
 
-            if(oldTransient.length > 0) {
-                oldTransient[0].setAttribute("class", "autoDom");
+        return new Promise(async (resolve, reject)=>{
 
-                //Fix missing classes
-                this.html[0].classList.forEach((c)=>{
-                    oldTransient[0].addClass(c);
-                });
+            try {
+                let autoDomContent = await this.createAutoDom();
 
-                try {
-                    diff.innerHTML(oldTransient[0], autoDomContent, { parser: { strict: true } });
-                } catch (ex){
-                    console.error("Failed to perform autoDOM diffing", ex);
-                    diff.release(oldTransient[0]); // Reset state trackers since the patch was not applied
-                }
+                if(oldTransient.length > 0) {
+                    oldTransient[0].setAttribute("class", "autoDom");
 
-                function cssPath(element, path= []) {
-                    if(element.parentNode == null) {
-                        // Document fragment is the top node
-                        return path.reverse().join(" > ");
+                    //Fix missing classes
+                    this.html[0].classList.forEach((c)=>{
+                        oldTransient[0].addClass(c);
+                    });
+
+                    try {
+                        diff.innerHTML(oldTransient[0], autoDomContent, { parser: { strict: true } });
+                    } catch (ex){
+                        console.error("Failed to perform autoDOM diffing", ex);
+                        diff.release(oldTransient[0]); // Reset state trackers since the patch was not applied
                     }
 
-                    const parent = element.parentNode;
-                    const childIndex = Array.from(parent.children).indexOf(element) + 1;
-                    path.push(element.nodeName.toLowerCase()+":nth-child("+childIndex+")");
-                    return cssPath(parent, path);
+                    function cssPath(element, path= []) {
+                        if(element.parentNode == null) {
+                            // Document fragment is the top node
+                            return path.reverse().join(" > ");
+                        }
+
+                        const parent = element.parentNode;
+                        const childIndex = Array.from(parent.children).indexOf(element) + 1;
+                        path.push(element.nodeName.toLowerCase()+":nth-child("+childIndex+")");
+                        return cssPath(parent, path);
+                    }
+
+                    // Update innerHTML for each template, as this is not part of the dom, and would not be updated otherwise
+                    cQuery(autoDomContent).find("template").forEach((template)=>{
+                        let path = cssPath(template);
+                        oldTransient[0].querySelector(path).innerHTML = autoDomContent.querySelector(path).innerHTML;
+                    });
+                } else {
+                    let transient = cQuery("<transient></transient>");
+                    transient[0].setAttribute("id", this.uuid);
+                    transient.addClass("autoDom");
+
+                    this.html[0].classList.forEach((c)=>{
+                        transient.addClass(c);
+                    });
+
+                    if (autoDomContent != null && autoDomContent !== "") {
+                        transient.append(autoDomContent);
+                    }
+                    this.html[0].parentNode.insertBefore(transient[0], this.html[0].nextSibling);
                 }
 
-                // Update innerHTML for each template, as this is not part of the dom, and would not be updated otherwise
-                cQuery(autoDomContent).find("template").forEach((template)=>{
-                    let path = cssPath(template);
-                    oldTransient[0].querySelector(path).innerHTML = autoDomContent.querySelector(path).innerHTML;
-                });
-            } else {
-                let transient = cQuery("<transient></transient>");
-                transient[0].setAttribute("id", this.uuid);
-                transient.addClass("autoDom");
-
-                this.html[0].classList.forEach((c)=>{
-                    transient.addClass(c);
-                });
-
-                if (autoDomContent != null && autoDomContent !== "") {
-                    transient.append(autoDomContent);
-                }                
-                this.html[0].parentNode.insertBefore(transient[0], this.html[0].nextSibling);
+                resolve();
+            } catch(e) {
+                console.warn("Unable to insertAutoDom: ", e);
+                this.autoDomDirty = true;
+                reject();
             }
-
-            this.autoDomDirty = false;
-
-        } catch(e) {
-            console.warn("Unable to insertAutoDom: ", e);
-        }
+        });
     }
 
     /**
