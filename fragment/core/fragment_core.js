@@ -55,6 +55,7 @@ class Fragment {
 
         //Setup autodom and make it able to wait until it is complete.
         this.autoDomDirty = true;
+        this.autoDomReady = false;
         this.setupAutoDomHandling();
 
         this.html[0].setAttribute("transient-fragment-uuid", this.uuid);
@@ -671,31 +672,41 @@ class Fragment {
      * @returns {Promise<void>} - Promise that resolves when the automatic dom is inserted into the document
      */
     insertAutoDom() {
+        let self = this;
+
         if(!this.supportsAutoDom()) {
             return;
         }
 
         if(!this.autoDomDirty) {
-            console.log("Not inserting autoDom, as it is already present and not flagged dirty");
-            return;
+            console.debug("Not inserting autoDom, as it is already present and not flagged dirty:", this.uuid);
+            return new Promise(async (resolve)=>{
+                while(!self.autoDomReady) {
+                    await new Promise((timeoutPromiseResolve)=>{
+                        setTimeout(()=>{
+                            timeoutPromiseResolve();
+                        }, 10);
+                    });
+                }
+                resolve();
+            });
         }
 
-        let self = this;
-
         this.autoDomDirty = false;
+        this.autoDomReady = false;
 
         return new Promise(async (resolve, reject)=>{
 
             try {
                 let autoDomContent = await this.createAutoDom();
 
-                let oldTransient = cQuery("transient.autoDom#" + this.uuid);
+                let oldTransient = cQuery("transient.autoDom#" + self.uuid);
 
                 if(oldTransient.length > 0) {
                     oldTransient[0].setAttribute("class", "autoDom");
 
                     //Fix missing classes
-                    this.html[0].classList.forEach((c)=>{
+                    self.html[0].classList.forEach((c)=>{
                         oldTransient[0].addClass(c);
                     });
 
@@ -725,23 +736,25 @@ class Fragment {
                     });
                 } else {
                     let transient = cQuery("<transient></transient>");
-                    transient[0].setAttribute("id", this.uuid);
+                    transient[0].setAttribute("id", self.uuid);
                     transient.addClass("autoDom");
 
-                    this.html[0].classList.forEach((c)=>{
+                    self.html[0].classList.forEach((c)=>{
                         transient.addClass(c);
                     });
 
                     if (autoDomContent != null && autoDomContent !== "") {
                         transient.append(autoDomContent);
                     }
-                    this.html[0].parentNode.insertBefore(transient[0], this.html[0].nextSibling);
+                    self.html[0].parentNode.insertBefore(transient[0], self.html[0].nextSibling);
                 }
+
+                self.autoDomReady = true;
 
                 resolve();
             } catch(e) {
                 console.warn("Unable to insertAutoDom: ", e);
-                this.autoDomDirty = true;
+                self.autoDomDirty = true;
                 reject();
             }
         });
@@ -757,6 +770,7 @@ class Fragment {
         }
         cQuery("transient.autoDom#" + this.uuid).remove();
         this.autoDomDirty = true;
+        this.autoDomReady = false;
     }
 
     /**
