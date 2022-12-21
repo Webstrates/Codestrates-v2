@@ -621,8 +621,8 @@ class Fragment {
         let self = this;
 
         this.registerOnFragmentChangedHandler((context) => {
+            self.autoDomDirty = true;
             if (self.auto && !Fragment.disableAutorun) {
-                self.autoDomDirty = true;
                 self.insertAutoDom();
             }
         });
