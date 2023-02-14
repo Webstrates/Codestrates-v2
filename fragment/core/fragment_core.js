@@ -1148,6 +1148,10 @@ Fragment.unknownFragments = new Map();
 Fragment.disableAutorun = false;
 Fragment.currentlyLoadingFragments = false;
 
+if(window.disableCodestratesFragmentsAutorun === true) {
+    Fragment.disableAutorun = true;
+}
+
 Fragment.setupFragments();
 
 wpm.onAllInstalled(()=>{
