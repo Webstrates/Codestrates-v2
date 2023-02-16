@@ -48,8 +48,8 @@ class SCSSFragment extends Fragment {
         
         return new Promise((resolve, reject) => {
             // Check cached data
-            if (AutoDOMCache){
-                let cache = AutoDOMCache.get(this);
+            if (typeof AutoDOMCache !== "undefined"){
+                let cache = AutoDOMCache.get(self);
                 if (cache!==null){
                     console.log("got something");
                     let style = document.createElement("style");
@@ -80,7 +80,7 @@ class SCSSFragment extends Fragment {
                             
                             // Store in cache for later too
                             console.log("Compiled something");
-                            if (AutoDOMCache){
+                            if (typeof AutoDOMCache !== "undefined"){
                                  AutoDOMCache.set(self, result.text);
                             }
 
