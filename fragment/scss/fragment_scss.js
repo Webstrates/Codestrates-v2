@@ -46,20 +46,20 @@ class SCSSFragment extends Fragment {
     require(options) {
         let self = this;
         
-        // Check cached data
-        if (AutoDOMCache){
-            let cache = AutoDOMCache.get(this);
-            if (cache!==null){
-                console.log("got something");
-                let style = document.createElement("style");
-                style.textContent = cache;
-                return style;
-            }
-        }
-        
-        console.log("Didnt cache");
-
         return new Promise((resolve, reject) => {
+            // Check cached data
+            if (AutoDOMCache){
+                let cache = AutoDOMCache.get(this);
+                if (cache!==null){
+                    console.log("got something");
+                    let style = document.createElement("style");
+                    style.textContent = cache;
+                    return style;
+                }
+            }
+
+            console.log("Didnt cache");
+
             requirejs(["sass/sass"], (Sass)=>{
                 let workerPromise = new Promise((resolve, reject)=>{
                     if(self.sassCompiler == null) {
