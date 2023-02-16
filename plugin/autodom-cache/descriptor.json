@@ -1,0 +1,9 @@
+{
+    "description": "Caches generated autoDOM in localStorage for faster rendering",
+    "dependencies": [
+        "#fragment_core"
+    ],
+    "license": "Apache 2.0",
+    "assets": [],
+    "version": "0.1"
+}
