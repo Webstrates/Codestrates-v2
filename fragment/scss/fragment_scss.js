@@ -46,61 +46,48 @@ class SCSSFragment extends Fragment {
     require(options) {
         let self = this;
         
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
             // Check cached data
             if (typeof AutoDOMCache !== "undefined"){
-                let cache = AutoDOMCache.get(self);
+                let cache = await AutoDOMCache.get(self);
                 if (cache!==null){
-                    console.log("got something");
                     let style = document.createElement("style");
                     style.textContent = cache;
-                    return style;
+                    resolve(style);
+                    return;
                 }
             }
 
-            console.log("Didnt cache");
-
             let start = Date.now();
 
-            new Promise((resolve)=>{
+            //Check for compiler
+            await new Promise((resolveCompiler)=>{
                 if(SCSSFragment.compiler == null) {
                     requirejs(["sass/sass"], (Sass)=> {
-                        SCSSFragment.compiler = Sass;
-                        resolve(SCSSFragment.compiler);
+                        fetchSassWorkerBlob().then((blob) => {
+                            SCSSFragment.compiler = new Sass(URL.createObjectURL(blob));
+                            resolveCompiler();
+                        });
                     });
                 } else {
-                    resolve(SCSSFragment.compiler);
+                    resolveCompiler();
                 }
-            }).then((Sass)=>{
-                let workerPromise = new Promise((resolve, reject)=>{
-                    if(self.sassCompiler == null) {
-                        fetchSassWorkerBlob().then((blob) => {
-                            self.sassCompiler = new Sass(URL.createObjectURL(blob));
-                            resolve();
-                        });
-                    } else {
-                        resolve();
+            });
+
+            SCSSFragment.compiler.compile(self.raw, async (result) => {
+                if (result.status === 0) {
+                    let style = document.createElement("style");
+                    style.textContent = result.text;
+
+                    // Store in cache for later too
+                    if (typeof AutoDOMCache !== "undefined"){
+                         await AutoDOMCache.set(self, result.text);
                     }
-                });
 
-                workerPromise.then(()=>{
-                    self.sassCompiler.compile(self.raw, (result) => {
-                        if (result.status === 0) {
-                            let style = document.createElement("style");
-                            style.textContent = result.text;
-                            
-                            // Store in cache for later too
-                            console.log("Compiled something");
-                            if (typeof AutoDOMCache !== "undefined"){
-                                 AutoDOMCache.set(self, result.text);
-                            }
-
-                            resolve(style);
-                        } else {
-                            reject(result.message);
-                        }
-                    });
-                });
+                    resolve(style);
+                } else {
+                    reject(result.message);
+                }
             });
         });
     }

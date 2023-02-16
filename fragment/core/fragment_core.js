@@ -1138,7 +1138,9 @@ class Fragment {
         return null;
     }
 
-
+    static addAllFragmentsLoadedCallback(callback) {
+        Fragment.allFragmentsLoadedCallbacks.push(callback);
+    }
 
 }; window.Fragment = Fragment;
 
@@ -1147,6 +1149,7 @@ Fragment.fragmentTypes = new Map();
 Fragment.unknownFragments = new Map();
 Fragment.disableAutorun = false;
 Fragment.currentlyLoadingFragments = false;
+Fragment.allFragmentsLoadedCallbacks = [];
 
 if(window.disableCodestratesFragmentsAutorun === true) {
     Fragment.disableAutorun = true;
@@ -1156,5 +1159,9 @@ Fragment.setupFragments();
 
 wpm.onAllInstalled(()=>{
     Fragment.allInstalledRun = true;
-    Fragment.runFragmentsLoaded();
+    Fragment.runFragmentsLoaded().then(()=>{
+        Fragment.allFragmentsLoadedCallbacks.forEach((callback)=>{
+            callback();
+        });
+    });
 });

@@ -3,30 +3,22 @@ let META_PATH = BASE_PATH+"meta.";
 let DATA_PATH = BASE_PATH+"data.";
 let KNOWN_EMPTIES = ["text/x-scss"];
 
-/**
- *   cyrb53 (c) 2018 bryc (github.com/bryc)
- *   A fast and simple hash function with decent collision resistance.
- *   Largely inspired by MurmurHash2/3, but with a focus on speed/simplicity.
- *   Public domain. Attribution appreciated.
- */
-const cyrb53 = (str, seed = 0) => {
-  let h1 = 0xdeadbeef ^ seed,
-    h2 = 0x41c6ce57 ^ seed;
-  for (let i = 0, ch; i < str.length; i++) {
-    ch = str.charCodeAt(i);
-    h1 = Math.imul(h1 ^ ch, 2654435761);
-    h2 = Math.imul(h2 ^ ch, 1597334677);
-  }
-  
-  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
-  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
-  
-  return 4294967296 * (2097151 & h2) + (h1 >>> 0);
-};
+async function digest(msg) {
+    //Get raw bytes
+    //Use SHA-160 as we are not in need of crypto security, and it is a little smaller than SHA-256
+    let hashBytes = await crypto.subtle.digest("SHA-160", new TextEncoder().encode(msg));
 
+    //Create uint8 array
+    let hashArray = new Uint8Array(hashBytes);
+
+    //Convert to hex
+    return Array.prototype.map.call(hashArray, (x)=>{
+        return ("0"+x.toString(16)).slice(-2);
+    }).join("");
+}
 
 class AutoDOMCache {
-    static get(fragment){
+    static async get(fragment){
         if (AutoDOMCache.DEBUG) console.log("Requesting cache for", fragment);
         let type = fragment.type;
         let currentContent = fragment.raw;
@@ -43,7 +35,7 @@ class AutoDOMCache {
         if (AutoDOMCache.DEBUG) console.log("Calculating path1");
         let length = currentContent.length;
         if (AutoDOMCache.DEBUG) console.log("Calculating path2");
-        let hash = cyrb53(currentContent);
+        let hash = await digest(currentContent);
         if (AutoDOMCache.DEBUG) console.log("Calculating path3");
         let fragmentPath = type+"."+hash+"."+length;      
         if (AutoDOMCache.DEBUG) console.log("Cache path is ", fragmentPath);
@@ -68,7 +60,7 @@ class AutoDOMCache {
         }
     }
     
-    static set(fragment, renderedContent){
+    static async set(fragment, renderedContent){
         if (AutoDOMCache.DEBUG) console.log("Storing cache entry for", fragment);
         
         let type = fragment.type;
@@ -83,7 +75,7 @@ class AutoDOMCache {
         
         // Otherwise store it in the cache
         let length = currentContent.length;
-        let hash = cyrb53(currentContent);
+        let hash = await digest(currentContent);
         let fragmentPath = type+"."+hash+"."+length;
                
         localStorage.setItem(DATA_PATH+fragmentPath, renderedContent);
