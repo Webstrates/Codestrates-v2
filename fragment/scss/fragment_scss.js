@@ -60,7 +60,18 @@ class SCSSFragment extends Fragment {
 
             console.log("Didnt cache");
 
-            requirejs(["sass/sass"], (Sass)=>{
+            let start = Date.now();
+
+            new Promise((resolve)=>{
+                if(SCSSFragment.compiler == null) {
+                    requirejs(["sass/sass"], (Sass)=> {
+                        SCSSFragment.compiler = Sass;
+                        resolve(SCSSFragment.compiler);
+                    });
+                } else {
+                    resolve(SCSSFragment.compiler);
+                }
+            }).then((Sass)=>{
                 let workerPromise = new Promise((resolve, reject)=>{
                     if(self.sassCompiler == null) {
                         fetchSassWorkerBlob().then((blob) => {
