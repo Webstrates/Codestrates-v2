@@ -5362,7 +5362,6 @@ let KNOWN_EMPTIES = ["text/x-scss"];
 
 async function digest(msg) {
     //Get raw bytes
-    //Use SHA-160 as we are not in need of crypto security, and it is a little smaller than SHA-256
     let hashBytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(msg));
 
     //Create uint8 array
@@ -5389,11 +5388,8 @@ class AutoDOMCache {
         }
         
         // Otherwise look it up in the cache
-        if (AutoDOMCache.DEBUG) console.log("Calculating path1");
         let length = currentContent.length;
-        if (AutoDOMCache.DEBUG) console.log("Calculating path2");
         let hash = await digest(currentContent);
-        if (AutoDOMCache.DEBUG) console.log("Calculating path3");
         let fragmentPath = type+"."+hash+"."+length;      
         if (AutoDOMCache.DEBUG) console.log("Cache path is ", fragmentPath);
         try {
