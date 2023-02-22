@@ -5363,7 +5363,7 @@ let KNOWN_EMPTIES = ["text/x-scss"];
 async function digest(msg) {
     //Get raw bytes
     //Use SHA-160 as we are not in need of crypto security, and it is a little smaller than SHA-256
-    let hashBytes = await crypto.subtle.digest("SHA-160", new TextEncoder().encode(msg));
+    let hashBytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(msg));
 
     //Create uint8 array
     let hashArray = new Uint8Array(hashBytes);
