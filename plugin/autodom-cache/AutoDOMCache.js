@@ -104,5 +104,5 @@ try {
 
 // Schedule cleanups occasionally
 // TODO
-AutoDOMCache.DEBUG=true;
+AutoDOMCache.DEBUG=false;
 window.AutoDOMCache = AutoDOMCache;
