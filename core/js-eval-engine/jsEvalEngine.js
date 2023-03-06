@@ -132,8 +132,30 @@ window.JsEvalEngine = class JsEvalEngine {
                     debug: trimmedLine
                 });
             });
+        } else if (navigator.userAgent.toLowerCase().indexOf('firefox') > -1) {
+            let stackSplit = stack.split("\n");
+
+            stackSplit.forEach((line) => {
+                let trimmedLine = line.trim();
+
+                let functionName = trimmedLine.substring(0, trimmedLine.indexOf("@")).trim();
+
+                let lineNumberAndPosition = trimmedLine.substring(trimmedLine.lastIndexOf(">") + 2).trim().split(":");
+
+                let lineNumber = parseInt(lineNumberAndPosition[1]);
+
+                if (Number.isNaN(lineNumber)) {
+                    lineNumber = null;
+                }
+
+                parsedStackTrace.push({
+                    method: functionName,
+                    lineNumber: lineNumber,
+                    debug: trimmedLine
+                });
+            });
         } else {
-            console.log("Unsupported browser for parsing stack trace");
+            console.log("Unsupported browser for parsing stack trace: ", stack);
             parsedStackTrace = stack;
         }
 
