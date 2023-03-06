@@ -5462,19 +5462,70 @@ class AutoDOMCache {
         }));
     }
     
+    static purge(){
+        let now = Date.now();
+        let entriesToKill = [];
+        let entriesToSort = new Map();
+        for (let i = 0; i < localStorage.length; i++){
+            let key = localStorage.key(i);
+            let metaJSON = localStorage.getItem(key);
+            
+            if (key.startsWith(META_PATH)){
+                let dataKey = DATA_PATH + (key.substring(META_PATH.length));
+                let entryMeta;
+                try {
+                    entryMeta = JSON.parse(metaJSON);
+                } catch (ex){
+                    // Ignore
+                }
+
+                if ((!entryMeta) || (entryMeta.lastHit && entryMeta.lastHit < now - AutoDOMCache.parameters.maxAge)){ 
+                    // Invalid or too old, kill meta+data
+                    entriesToKill.push(key);
+                    entriesToKill.push(dataKey);
+                    continue;
+                } else {
+                    // Good one, store the size info
+                    try {
+                        entryMeta.contentLength = metaJSON.length + localStorage.getItem(dataKey).length;
+                        entriesToSort.set(key, entryMeta);                
+                    } catch (ex){
+                        entriesToKill.push(key); // Orphaned node? kill key                        
+                    }
+                }
+            }
+        }
+        
+        // Purge stale entries
+        console.log("AutoDOMCache: Purging "+entriesToKill.length+" stale items...");
+        entriesToKill.forEach((entry)=>{            
+            localStorage.removeItem(entry);
+        });
+        
+        // TODO: Also purge longest and/or oldest entries down to maxEntries size
+        let tooManyEntries = AutoDOMCache.parameters.maxEntries - entriesToSort.length;
+        
+        // TODO: Finally purge big entries down to maxSize size
+        
+        // Update purge timestamp
+        AutoDOMCache.parameters.lastPurge = Date.now();        
+        localStorage.setItem(PARAM_PATH, JSON.stringify(AutoDOMCache.parameters));
+    }
 }
 
 // Init cache params
 let PARAM_PATH = BASE_PATH+"params";
 let defaultParams = {
     maxEntries: 1000,
-    maxAge: 3600*24*14,
-    maxSize: 1024*512
+    maxAge: 3600*24*30,
+    maxSize: 1024*512,
+    lastPurge: 1,
+    purgeFrequency: 3600*24*2
 };
 let paramString = localStorage.getItem(PARAM_PATH);
 try {
     AutoDOMCache.parameters = JSON.parse(paramString);
-    if (!(AutoDOMCache.parameters.maxEntries && AutoDOMCache.parameters.maxAge && AutoDOMCache.parameters.maxSize)) throw new Error("AutoDOMCache could not parse initialization params from localStorage, restoring defaults");
+    if (!(AutoDOMCache.parameters.maxEntries && AutoDOMCache.parameters.maxAge && AutoDOMCache.parameters.maxSize && AutoDOMCache.parameters.lastPurge && AutoDOMCache.parameters.purgeFrequency)) throw new Error("AutoDOMCache could not parse initialization params from localStorage, restoring defaults");
 } catch (ex) {
     console.log(ex);
     AutoDOMCache.parameters = defaultParams;
@@ -5482,7 +5533,10 @@ try {
 }
 
 // Schedule cleanups occasionally
-// TODO
+if (Date.now()-AutoDOMCache.parameters.lastPurge > AutoDOMCache.parameters.purgeFrequency){
+    setTimeout(AutoDOMCache.purge, 3000);
+}
+
 AutoDOMCache.DEBUG=false;
 window.AutoDOMCache = AutoDOMCache;
 
