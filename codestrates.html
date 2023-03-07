@@ -3648,7 +3648,7 @@ class EditorManager {
      */
     static registerEditor(editor) {
         editor.types().forEach((type)=>{
-            EditorManager.registerEditorType(editor, type);
+            EditorManager.registerEditorType(type, editor);
         });
     }
 
