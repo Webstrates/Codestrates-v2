@@ -69,30 +69,28 @@ class EditorManager {
      */
     static registerEditor(editor) {
         editor.types().forEach((type)=>{
-            let editors = EditorManager.editorTypes.get(type);
-            if(editors == null) {
-                editors = new Set();
-                EditorManager.editorTypes.set(type, editors);
-            }
-
-            editors.add(editor);
+            EditorManager.registerEditorType(editor, type);
         });
+    }
+
+    static registerEditorType(type, editor) {
+        let editors = EditorManager.editorTypes.get(type);
+        if(editors == null) {
+            editors = new Set();
+            EditorManager.editorTypes.set(type, editors);
+        }
+
+        editors.add(editor);
     }
 
     /**
      * @private
      */
     static unregisterEditor(editor, editorClassName) {
-        editor.types().forEach((type)=>{
-            let editors = EditorManager.editorTypes.get(type);
-            if(editors == null) {
-                editors = new Set();
-                EditorManager.editorTypes.set(type, editors);
-            }
-
+        for(let editors of EditorManager.editorTypes.values()) {
             editors.delete(editor);
-        });
-        
+        }
+
         cQuery("."+editorClassName).forEach((editor)=>{
             editor = cQuery(editor).data("Editor");
             if(editor != null) {

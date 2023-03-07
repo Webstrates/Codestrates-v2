@@ -41,6 +41,11 @@ class MonacoEditor extends Editor {
         this.setupEditor();
     }
 
+    static registerExtraType(mimeType, language) {
+        MonacoEditor.extraTypes.set(mimeType, language);
+        EditorManager.registerEditorType(mimeType, this);
+    }
+
     async setupEditor() {
         let self = this;
 
@@ -49,10 +54,6 @@ class MonacoEditor extends Editor {
         switch (self.fragment.type) {
             case "text/x-latex":
                 language = "plaintext";
-                break;
-
-            case "text/javascript":
-                language = "javascript";
                 break;
 
             case "text/javascript":
@@ -104,6 +105,11 @@ class MonacoEditor extends Editor {
             case "text/whenv2":
                 language = "json";
                 break;
+        }
+
+        if(MonacoEditor.extraTypes.has(self.fragment.type)) {
+            console.log("Using extra type:", self.fragment.type);
+            language = MonacoEditor.extraTypes.get(self.fragment.type);
         }
 
         requirejs(["vs/editor/editor.main"], () => {
@@ -414,9 +420,11 @@ class MonacoEditor extends Editor {
             "application/x-lua",
             "wpm/descriptor",
             "application/json",
-            "text/x-latex"
+            "text/x-latex",
+            ...MonacoEditor.extraTypes.keys()
         ];
     }
 }; window.MonacoEditor = MonacoEditor;
+MonacoEditor.extraTypes = new Map();
 
 EditorManager.registerEditor(MonacoEditor);
