@@ -1151,6 +1151,9 @@ Fragment.disableAutorun = false;
 Fragment.currentlyLoadingFragments = false;
 Fragment.allFragmentsLoadedCallbacks = [];
 
+const urlParams = new URLSearchParams(location.search);
+Fragment.disableAutorun = (urlParams.get("codestrates") === "false");
+
 if(window.disableCodestratesFragmentsAutorun === true) {
     Fragment.disableAutorun = true;
 }
