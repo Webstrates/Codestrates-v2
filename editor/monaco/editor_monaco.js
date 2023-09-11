@@ -52,6 +52,7 @@ class MonacoEditor extends Editor {
         let language = "text";
 
         switch (self.fragment.type) {
+            case "model/vnd.usda":
             case "text/x-latex":
                 language = "plaintext";
                 break;
