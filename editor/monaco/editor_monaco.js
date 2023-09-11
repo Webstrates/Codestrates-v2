@@ -420,6 +420,7 @@ class MonacoEditor extends Editor {
             "text/x-typescript",
             "application/x-lua",
             "wpm/descriptor",
+            "model/vnd.usda",
             "application/json",
             "text/x-latex",
             ...MonacoEditor.extraTypes.keys()
