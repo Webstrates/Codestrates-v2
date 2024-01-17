@@ -113,7 +113,7 @@ class MonacoEditor extends Editor {
             language = MonacoEditor.extraTypes.get(self.fragment.type);
         }
 
-        requirejs(["vs/editor/editor.main"], () => {
+        requirejs(["vs/editor/editor.main"], (monaco) => {
             EventSystem.triggerEvent("Codestrates.Editor.Monaco.Loaded", {
                 monaco: monaco
             });
