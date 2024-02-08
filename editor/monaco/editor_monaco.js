@@ -58,14 +58,9 @@ class MonacoEditor extends Editor {
                 break;
 
             case "text/javascript":
-                language = "javascript";
-                break;
-
-            case "text/p5js":
-                language = "javascript";
-                break;
-
+            case "text/javascript+babel":
             case "text/whenjs":
+            case "text/p5js":
                 language = "javascript";
                 break;
 
@@ -406,6 +401,7 @@ class MonacoEditor extends Editor {
     static types() {
         return [
             "text/javascript",
+            "text/javascript+babel",
             "text/p5js",
             "text/whenjs",
             "text/whenv2",

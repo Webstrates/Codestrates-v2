@@ -1,0 +1,11 @@
+{
+    "description": "Javascript enhanced by Babel",
+    "dependencies": [
+        "#fragment_core",
+        "#js-eval-engine",
+        "wpm_js_libs #babel"
+    ],
+    "license": "Apache 2.0",
+    "assets": [],
+    "version": "1"
+}
