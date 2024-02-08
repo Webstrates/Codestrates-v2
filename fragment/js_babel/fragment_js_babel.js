@@ -47,22 +47,23 @@ class JavascriptBabelFragment extends Fragment {
         let self = this;
         
         // Support for css-like imports from other fragments
-        function customLookups({types,template}){
+        function fragmentImports({types,template}){
             return {
                 visitor: {
                     ImportDeclaration(path,state){
                         if (path?.node?.source?.value?.startsWith("#")){
-                            value = `data:text/javascript,${encodeURIComponent(Fragment.one(path.node.source.value).require())}`
-                            // TODO rewrite to let {ost,have,MyApp} = (await Fragment.one("#pjat").require());
-                            //path.node.source.value="ost";                            
+                            // TODO rewrite to parse out names properly
+                            path.replaceWith(Babel.transform(`let {MyApp} = (await Fragment.one("#pjat").require());`, {ast:true}).ast.program.body[0]);
                         }
                     }
                 }
             }
         }
+        let ast = Babel.transform(self.raw,{presets:["react"], ast:true, code:false, plugins:[fragmentImports]}).ast;
+        console.log(ast);
 
-        let processedCode = Babel.transform(self.raw,{presets:["react"], ast:true, code:true, plugins:[customLookups]});
-        console.log(processedCode.ast);
+        // Turn into real JS and return it
+        let processedCode = Babel.transformFromAst(ast,null, {presets:["react"]});
         let output = await import(`data:text/javascript,${encodeURIComponent(processedCode.code)}`);
         return output;
     }
