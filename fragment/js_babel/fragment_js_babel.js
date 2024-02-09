@@ -52,19 +52,45 @@ class JavascriptBabelFragment extends Fragment {
                 visitor: {
                     ImportDeclaration(path,state){
                         if (path?.node?.source?.value?.startsWith("#")){
-                            // TODO rewrite to parse out names properly
-                            path.replaceWith(Babel.transform(`let {MyApp} = (await Fragment.one("#pjat").require());`, {ast:true}).ast.program.body[0]);
+                            let fragmentString = path.node.source.value.replaceAll("\"","\\\"");
+                            let specifierString = "throw new Error('Couldnt parse import specifier, try something simpler like import {Thing} from \"...\"')";
+                            if (path.node.specifiers.length===1 && path.node.specifiers[0].type==="ImportNamespaceSpecifier"){
+                                specifierString = "var "+path.node.specifiers[0].local.name+" = fragment.require();";
+                                path.scope.removeBinding(path.node.specifiers[0].local.name); // Fix Babel not removing old bindings from scope
+                            } else if (path.node.specifiers.length===1 && path.node.specifiers[0].type==="ImportDefaultSpecifier"){
+                                specifierString = "var "+path.node.specifiers[0].local.name+" = fragment.require().default;";
+                                path.scope.removeBinding(path.node.specifiers[0].local.name); // Fix Babel not removing old bindings from scope
+                            } else {
+                                let specifiers = path.node.specifiers.map(specifier=>{
+                                    let assignment = "var "+specifier.local.name+"=wrapper."+specifier.imported.name;
+                                    path.scope.removeBinding(specifier.local.name); // Fix Babel not removing old bindings from scope
+                                    return assignment;
+                                });
+                                specifierString = "let wrapper = await fragment.require();"+specifiers.join(";");
+                            }
+                            
+                            let replacementProgram = Babel.transform(`
+                                {try {
+                                    let fragment = Fragment.one("`+fragmentString+`");
+                                    if (!fragment) throw new Error("Couldn't find fragment");
+                                    `+specifierString+`
+                                } catch (ex){
+                                    throw new Error("Unable to import '`+path.node.source.value.replaceAll("\"","")+"' on line "+path.node.loc.start.line+`: "+ex);
+                                }}
+                            `, {ast:true,code:false});
+                            path.replaceWith(replacementProgram.ast.program.body[0]);
                         }
                     }
                 }
-            }
+            };
         }
-        let ast = Babel.transform(self.raw,{presets:["react"], ast:true, code:false, plugins:[fragmentImports]}).ast;
-        console.log(ast);
+        let ast = Babel.transform(self.raw+"/*"+Math.random()+"*/",{presets:["react"], ast:true, code:false, plugins:[fragmentImports]}).ast;
 
         // Turn into real JS and return it
-        let processedCode = Babel.transformFromAst(ast,null, {presets:["react"]});
-        let output = await import(`data:text/javascript,${encodeURIComponent(processedCode.code)}`);
+        let processedCode = Babel.transformFromAst(ast,null, {presets:["react"]}).code;
+        processedCode = "let fragmentSelfReference = Fragment.one('code-fragment[transient-fragment-uuid=\""+this.uuid+"\"');"+processedCode;
+        //console.log(processedCode);
+        let output = await import(`data:text/javascript,${encodeURIComponent(processedCode)}`);
         return output;
     }
 
