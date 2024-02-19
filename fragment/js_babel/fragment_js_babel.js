@@ -55,10 +55,10 @@ class JavascriptBabelFragment extends Fragment {
                             let fragmentString = path.node.source.value.replaceAll("\"","\\\"");
                             let specifierString = "throw new Error('Couldnt parse import specifier, try something simpler like import {Thing} from \"...\"')";
                             if (path.node.specifiers.length===1 && path.node.specifiers[0].type==="ImportNamespaceSpecifier"){
-                                specifierString = "var "+path.node.specifiers[0].local.name+" = fragment.require();";
+                                specifierString = "var "+path.node.specifiers[0].local.name+" = await fragment.require();";
                                 path.scope.removeBinding(path.node.specifiers[0].local.name); // Fix Babel not removing old bindings from scope
                             } else if (path.node.specifiers.length===1 && path.node.specifiers[0].type==="ImportDefaultSpecifier"){
-                                specifierString = "var "+path.node.specifiers[0].local.name+" = fragment.require().default;";
+                                specifierString = "var "+path.node.specifiers[0].local.name+" = (await fragment.require()).default;";
                                 path.scope.removeBinding(path.node.specifiers[0].local.name); // Fix Babel not removing old bindings from scope
                             } else {
                                 let specifiers = path.node.specifiers.map(specifier=>{
