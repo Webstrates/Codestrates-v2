@@ -1,6 +1,7 @@
 {
     "source": {
-        "include": ["."]
+        "include": ["."],
+        "exclude": ["core/js-eval-engine/jsEvalEngine.js"]
     },
     "opts": {
         "recurse": true,
