@@ -43,6 +43,7 @@ class Fragment {
         this.html = html;
 
         this.html.data("Fragment", this);
+        this.html.fragment = this;
 
         this.textInsertedCallbacks = [];
         this.textDeletedCallbacks = [];
