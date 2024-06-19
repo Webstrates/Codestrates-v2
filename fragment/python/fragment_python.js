@@ -140,8 +140,8 @@ codestrates_python_scope()`;
 
             if(method === "codestrate_python_scope") {
                 //Internal fragment
-                let attrName = fragment.html[0].getAttribute("name");
-                let attrId = fragment.html[0].getAttribute("id");
+                let attrName = fragment.element.getAttribute("name");
+                let attrId = fragment.element.getAttribute("id");
 
                 let name = (attrName != null && attrName.trim() !== "" ? attrName : "code-fragment");
 

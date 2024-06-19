@@ -322,8 +322,8 @@ StackWalker.stackCleanPatterns.push({
             let fragmentUUID = si.method.substring(si.method.indexOf("CS_ASYNC_fragment_")+9).replace("_", "-");
             let fragment = Fragment.fromFragmentUUID(fragmentUUID);
 
-            let attrName = fragment.html[0].getAttribute("name");
-            let attrId = fragment.html[0].getAttribute("id");
+            let attrName = fragment.element.getAttribute("name");
+            let attrId = fragment.element.getAttribute("id");
 
             let name = (attrName != null && attrName.trim() !== "" ? attrName : "code-fragment");
 

@@ -21,6 +21,7 @@
 /* global cQuery, webstrate, HTMLElement, NodeList, UUIDGenerator, Observer, WPMv2, Text, DIFF_INSERT, DIFF_DELETE, wpm */
 
 const dmp = new diff_match_patch();
+let legacyWarningCounter = 0;
 
 /**
  * @namespace Fragments
@@ -33,17 +34,38 @@ const dmp = new diff_match_patch();
  * @memberof Fragments
  */
 class Fragment {
+    get html(){
+        if (legacyWarningCounter<3){
+            try {
+                throw new Error("Legacy read access of private field Fragment.html");
+            } catch (ex){
+                console.info("Reading cQuery object from private field .html directly on Fragment will break in the future, use .element to get the DOMElement directly instead. Only the first 3 warnings are shown, printing a stack trace...",ex);
+            }
+        }
+        legacyWarningCounter++;
+        return cQuery(this.element);
+    }
+    set html(cQueryHTML){
+        try {
+            throw new Error("Legacy write access to private field Fragment.html");
+        } catch (ex){
+            console.warn("Writing a cQuery object to private field .html directly on Fragment will not be possible in the future, printing a stack trace...",ex);
+        }
+        this.element = cQueryHTML[0];
+    }
+    
     /**
      * Create a new fragment using the given cQuery object as its base.
-     * @param {cQuery} html - The cQuery object to use as base.
+     * @param {cQuery} cQueryHTMl - The cQuery object to use as base.
      */
-    constructor(html) {
+    constructor(cQueryHTMl) {
         let self = this;
 
-        this.html = html;
-
-        this.html.data("Fragment", this);
-        this.html.fragment = this;
+        // Legacy cQuery html element
+        cQueryHTMl.data("Fragment", this); // Legacy
+        
+        this.element = cQueryHTMl[0];
+        this.element.fragment = this;
 
         this.textInsertedCallbacks = [];
         this.textDeletedCallbacks = [];
@@ -59,7 +81,7 @@ class Fragment {
         this.autoDomReady = false;
         this.setupAutoDomHandling();
 
-        this.html[0].setAttribute("transient-fragment-uuid", this.uuid);
+        this.element.setAttribute("transient-fragment-uuid", this.uuid);
 
         this.setupObservers();
         this.startObserver();
@@ -72,7 +94,7 @@ class Fragment {
      * @returns {Text}
      */
     getTextContentNode() {
-        let textContentNode = this.html[0];
+        let textContentNode = this.element;
 
         this.checkTextContentNode(textContentNode);
 
@@ -136,13 +158,13 @@ class Fragment {
                 sendUpdateCallback = true;
             }
 
-            if (mutation.type === "attributes" && mutation.attributeName === "auto" && mutation.target === self.html[0]) {
+            if (mutation.type === "attributes" && mutation.attributeName === "auto" && mutation.target === self.element) {
                 //If auto attribute changed, trigger onAutoChanged
                 self.onAutoChanged(self.auto);
                 sendUpdateCallback = false;
-            } else if (mutation.type === "attributes" && mutation.attributeName === "class" && mutation.target === self.html[0]) {
+            } else if (mutation.type === "attributes" && mutation.attributeName === "class" && mutation.target === self.element) {
                 //If auto attribute changed, trigger onAutoChanged
-                self.onClassChanged(this.html[0].classList);
+                self.onClassChanged(this.element.classList);
                 sendUpdateCallback = false;
             } else if(mutation.type === "characterData") {
                 if(mutation.target.characterDataAlreadyHandled) {
@@ -188,7 +210,7 @@ class Fragment {
         });
 
         //Only send
-        if(this.html[0].parentNode != null && sendUpdateCallback) {
+        if(this.element.parentNode != null && sendUpdateCallback) {
             //Dont do changed callbacks if we are not in the dom?
             this.triggerFragmentChanged(this);
         }
@@ -239,7 +261,7 @@ class Fragment {
             return;
         }
         
-        this.observer.observe(this.html[0], {
+        this.observer.observe(this.element, {
             attributes: true,
             childList: true,
             subtree: true,
@@ -327,14 +349,14 @@ class Fragment {
      * @type {boolean}
      */
     get auto() {
-        return this.html[0].hasAttribute("auto");
+        return this.element.hasAttribute("auto");
     }
 
     set auto(auto) {
         if (auto) {
-            this.html[0].setAttribute("auto", "");
+            this.element.setAttribute("auto", "");
         } else {
-            this.html[0].removeAttribute("auto");
+            this.element.removeAttribute("auto");
         }
     }
 
@@ -544,7 +566,7 @@ class Fragment {
      * @readonly
      */
     get type() {
-        return this.html[0].getAttribute("data-type");
+        return this.element.getAttribute("data-type");
     }
 
     /**
@@ -577,8 +599,6 @@ class Fragment {
         }
 
         this.stopObserver();
-        this.html.data("Fragment", null);
-        this.html = null;
     }
 
     /**
@@ -707,7 +727,7 @@ class Fragment {
                     oldTransient[0].setAttribute("class", "autoDom");
 
                     //Fix missing classes
-                    self.html[0].classList.forEach((c)=>{
+                    self.element.classList.forEach((c)=>{
                         oldTransient[0].addClass(c);
                     });
 
@@ -740,14 +760,14 @@ class Fragment {
                     transient[0].setAttribute("id", self.uuid);
                     transient.addClass("autoDom");
 
-                    self.html[0].classList.forEach((c)=>{
+                    self.element.classList.forEach((c)=>{
                         transient.addClass(c);
                     });
 
                     if (autoDomContent != null && autoDomContent !== "") {
                         transient.append(autoDomContent);
                     }
-                    self.html[0].parentNode.insertBefore(transient[0], self.html[0].nextSibling);
+                    self.element.parentNode.insertBefore(transient[0], self.element.nextSibling);
                 }
 
                 self.autoDomReady = true;
@@ -787,8 +807,8 @@ class Fragment {
      * Returns a dompath for finding this fragment
      */
     getDomPath() {
-        let child = this.html[0];
-        let parent = this.html[0].parentNode;
+        let child = this.element;
+        let parent = this.element.parentNode;
 
         let domPath = [];
 
@@ -845,7 +865,7 @@ class Fragment {
 
         Fragment.setupFragment(fragmentDom);
 
-        return fragmentDom.data("Fragment");
+        return fragmentDom[0].fragment;
     }
 
     /**
@@ -871,16 +891,9 @@ class Fragment {
     static unRegisterFragmentType(fragmentClass) {
         Fragment.fragmentTypes.delete(fragmentClass.type());
 
-        //Go through all fragments of this type, and do stuff
-        cQuery("code-fragment[data-type='" + fragmentClass.type() + "']").forEach((fragmentElement) => {
-            let fragment = cQuery(fragmentElement).data("Fragment");
-
-            if (fragment != null) {
-                //Unload the fragment
-                fragment.unload();
-            }
-
-            //Reinsert this fragment as unknown
+        // Remove and reinsert all fragments of this type as unknown
+        document.querySelectorAll("code-fragment[data-type='" + fragmentClass.type() + "']").forEach((fragmentElement) => {
+            fragmentElement.fragment?.unload();
             Fragment.saveUnknownFragment(fragmentElement, fragmentClass.type());
         });
     }
@@ -891,13 +904,9 @@ class Fragment {
      * @param {cQuery} fragment - the fragment to set up
      */
     static setupFragment(fragment) {
-        if (fragment.data("Fragment") != null) {
-            //Already setup as fragment
-            return null;
-        }
+        if (fragment.fragment != null) return; //Already setup as fragment            
 
         let fragmentType = fragment[0].getAttribute("data-type");
-
         if (!Fragment.fragmentTypes.has(fragmentType)) {
             //Unknown fragment type
 
@@ -958,10 +967,10 @@ class Fragment {
                 });
                 Array.from(mutation.removedNodes).forEach((node) => {
                     if(node.matches != null && node.matches("code-fragment")) {
-                        cQuery(node).data("Fragment").unload();
+                        node.fragment?.unload();
                     } else if(node.querySelector != null) {
                         node.querySelectorAll("code-fragment").forEach((child)=>{
-                            cQuery(child).data("Fragment").unload();
+                            child.fragment?.unload();
                         });
                     }
                 });
@@ -1096,10 +1105,7 @@ class Fragment {
         if (query != null) {
             if (typeof query === "string") {
                 cQuery(query).forEach((result) => {
-                    result = cQuery(result);
-
-                    let fragment = result.data("Fragment");
-
+                    let fragment = result.fragment;
                     if (fragment != null) {
                         fragments.push(fragment);
                     }
@@ -1114,7 +1120,7 @@ class Fragment {
                 if (query instanceof Fragment) {
                     fragments.push(query);
                 } else if (query instanceof HTMLElement) {
-                    let fragment = cQuery(query).data("Fragment");
+                    let fragment = query.fragment;
                     if (fragment != null) {
                         fragments.push(fragment);
                     }
@@ -1128,15 +1134,8 @@ class Fragment {
     }
 
     static fromFragmentUUID(uuid) {
-        for(let fragmentDom of cQuery("code-fragment")) {
-            let fragment = cQuery(fragmentDom).data("Fragment");
-
-            if(fragment != null && fragment.uuid === uuid.replace("_", "-")) {
-                return fragment;
-            }
-        }
-
-        return null;
+        let node = document.querySelector("code-fragment[data-uuid='"+uuid.replace("_", "-")+"']");
+        return node?.fragment;
     }
 
     static addAllFragmentsLoadedCallback(callback) {

@@ -39,14 +39,13 @@ class DescriptorFragment extends Fragment {
     getTextContentNode() {
         let self = this;
         
-        let descriptor = this.html.find("wpm-descriptor");
-
-        if (descriptor.length === 0) {
+        let descriptor = this.element.querySelector("wpm-descriptor");
+        if (!descriptor) {
             this.executeObserverless(() => {
-                descriptor = cQuery(document.createElement("wpm-descriptor"));
-                self.html.append(descriptor);
+                descriptor = document.createElement("wpm-descriptor");
+                self.element.appendChild(descriptor);
                 WPMv2.stripProtection(descriptor);
-                descriptor[0].textContent = `{
+                descriptor.textContent = `{
     "description": "",
     "dependencies": [
     ],
@@ -56,9 +55,9 @@ class DescriptorFragment extends Fragment {
             },null, true);
         }
 
-        this.checkTextContentNode(descriptor[0]);
+        this.checkTextContentNode(descriptor);
 
-        return descriptor[0];
+        return descriptor;
     }
 
     /**

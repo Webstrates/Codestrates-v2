@@ -62,12 +62,12 @@ class HtmlFragment extends Fragment {
     }
     
     getTextContentNode() {
-        if(this.html[0].childNodes.length > 1 || (this.html[0].firstChild != null && !(this.html[0].firstChild instanceof Text))) {
+        if(this.element.childNodes.length > 1 || (this.element.firstChild != null && !(this.element.firstChild instanceof Text))) {
             //We have at least one child, first of those is not a Text node, convert
             let textNode = document.createTextNode("");
-            let content = this.html[0].innerHTML;
-            this.html[0].innerHTML = "";
-            this.html[0].appendChild(textNode);
+            let content = this.element.innerHTML;
+            this.element.innerHTML = "";
+            this.element.appendChild(textNode);
             textNode.nodeValue = content;
             console.log("Converted HTML to single textNode");
         }

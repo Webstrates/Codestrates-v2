@@ -205,8 +205,8 @@ window.JsEvalEngine = class JsEvalEngine {
 
     static doLog(logger, fragment, lineNumber, ...messages) {
         if(fragment != null) {
-            let name = fragment.html[0].getAttribute("name");
-            let id = fragment.html[0].getAttribute("id");
+            let name = fragment.element.getAttribute("name");
+            let id = fragment.element.getAttribute("id");
 
             logger("Fragment ["+(name!=null&&name.trim()!==""?name:fragment.type)+(id!=null&&id.trim()!==""?"#"+id:"")+(lineNumber!=null?":"+lineNumber:"")+"]", ...messages);
         } else {
