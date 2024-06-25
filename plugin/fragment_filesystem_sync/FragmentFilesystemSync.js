@@ -235,7 +235,6 @@ class FragmentFilesystemSync {
                 console.log("Couldn't map parent folder, giving up on adding", path);
             } else {
                 // TODO: Check for collisions/duplicates here
-                console.log("Adding to", parentNode, path);
                 let name = path.split("/");
                 name = name[name.length-1];
                 let extensionLocation = name.lastIndexOf(".");
@@ -289,7 +288,7 @@ class FragmentFilesystemSync {
                     if (contents.length>0){
                         let hash = await sha256(contents);
                         if (FragmentFilesystemSync.DEBUG) console.log("Looking for ",hash);
-                        let collision = Object.values(oldMeta.paths).find((p)=>{console.log(p.hash,p.type);return p.type=="fragment" && p.hash==hash;});
+                        let collision = Object.values(oldMeta.paths).find((p)=>{return p.type=="fragment" && p.hash==hash;});
                         if (collision){                            
                             // Copy over old attributes
                             if (FragmentFilesystemSync.DEBUG) console.log("Found")
