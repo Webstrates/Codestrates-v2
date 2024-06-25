@@ -1139,7 +1139,11 @@ class Fragment {
     }
 
     static addAllFragmentsLoadedCallback(callback) {
-        Fragment.allFragmentsLoadedCallbacks.push(callback);
+        if (Fragment.allInstalledRun){
+            callback(); // callbacks added late are called immedaitely
+        } else {
+            Fragment.allFragmentsLoadedCallbacks.push(callback);
+        }        
     }
 
 }; window.Fragment = Fragment;
@@ -1161,10 +1165,10 @@ if(window.disableCodestratesFragmentsAutorun === true) {
 Fragment.setupFragments();
 
 wpm.onAllInstalled(()=>{
-    Fragment.allInstalledRun = true;
     Fragment.runFragmentsLoaded().then(()=>{
         Fragment.allFragmentsLoadedCallbacks.forEach((callback)=>{
             callback();
         });
     });
+    Fragment.allInstalledRun = true;
 });

@@ -17,7 +17,7 @@ let extensionTypes = {
   "text/css": "css",
   "text/x-scss": "scss" 
 }
-let autoCloneAttributes = ["id","data-repository","auto","class"];
+let autoCloneAttributes = ["id","data-repository","auto","class","name"];
 
 class FragmentFilesystemSync {
     static isSupported(){
@@ -140,8 +140,8 @@ class FragmentFilesystemSync {
                 }
             }            
         });
-        this.observer.observe(document, {childList:true, subtree:true});
-        document.querySelectorAll("code-fragment").forEach((fragment)=>{
+        this.observer.observe(document.body, {childList:true, subtree:true});
+        document.querySelectorAll("body code-fragment").forEach((fragment)=>{
             self.onWSFragmentElementAdded(fragment);
         });
 
@@ -195,7 +195,7 @@ class FragmentFilesystemSync {
     }
 
     onWSFragmentElementAdded(fragmentElement){
-        // TODO: Check if already exists and ignore        
+        // TODO: Check if already exists and ignore
         setTimeout(()=>{this.fragmentLinks.push(new FragmentLink(fragmentElement.fragment))},1);
     }
     onWSFragmentElementRemoved(fragmentElement){
@@ -240,8 +240,13 @@ class FragmentFilesystemSync {
         // Check if any new files/dirs in FS with the old mapping from FS
         await traverseDirectoryStructure("",this.directoryHandle, async (path,name,parent,entry)=>{                
             if (!oldMeta.paths[path]){
-                // A new directory, create it in the webstrate                    
-                let newFolderElement = document.createElement("code-folder");
+                // A new directory, create it in the webstrate
+                let newFolderElement;
+                if (name.endsWith(".wpm")){
+                    newFolderElement = document.createElement("wpm-package");
+                } else {
+                    newFolderElement = document.createElement("code-folder");
+                }
                 await addElementFromOldFS(path,newFolderElement,"directory");
             }
 
@@ -273,7 +278,10 @@ class FragmentFilesystemSync {
                             if (FragmentFilesystemSync.DEBUG) console.log("Found")
                             autoCloneAttributes.forEach(attr=>{
                                 if (FragmentFilesystemSync.DEBUG) console.log("Adding attrs")
-                                if (collision[attr]!=undefined){
+                                if (collision[attr]===undefined){
+                                    if (FragmentFilesystemSync.DEBUG) console.log("removing attrs",attr);
+                                    fragmentElement.removeAttribute(attr);
+                                } else {
                                     if (FragmentFilesystemSync.DEBUG) console.log("added attrs",attr, collision[attr]);
                                     fragmentElement.setAttribute(attr,collision[attr]);
                                 }
@@ -337,28 +345,57 @@ class FragmentFilesystemSync {
         let sanitizeFileName = (rawName)=>rawName.replace(/[^()a-z0-9.#\-_ ]/gi, '_');
         let newPathMapping = new Map();
         let newNodeMapping = new Map();
-        this.fragmentLinks.forEach((link)=>{
-            let path = "";
-            for (let part of link.getRawElementPath()){
-                if (newNodeMapping.has(part.node)){
-                    // We already have this
-                    path = newNodeMapping.get(part.node);
-                } else {
-                    // Need to generate new entry and check uniqueness
-                    path+="/"+sanitizeFileName(part.name);
-                    while(newPathMapping.get(path)){
-                        // Not unique, append WSID
-                        path+="_"+part.node.webstrate.id; // STUB: Take into account extensions
-                    }
-                    newPathMapping.set(path,part);
-                    newNodeMapping.set(part.node,path);
-                }
+        
+        // Recurse through folder elements and map them with unique names
+        let registerFolderElements = function registerFolderElements(currentPath, currentElement){
+            if (folderElements.includes(currentElement.nodeName)){
+                // This is a folder
+                let path;
+                let counter = 0;
+                let extension = "";
+                if (currentElement.nodeName==="WPM-PACKAGE") extension = ".wpm";
+                do {
+                    // Not unique, append a number
+                    path = currentPath + "/" + sanitizeFileName(getNodeName(currentElement))+(counter>0?"_"+counter:"")+extension;  
+                    counter++;                  
+                } while(newPathMapping.get(path));
+                newPathMapping.set(path,{node:currentElement});
+                newNodeMapping.set(currentElement,path);                
+                currentPath = path;
             }
+            for (let i = 0; i<currentElement.children.length; i++){
+                registerFolderElements(currentPath,currentElement.children[i]);
+            }            
+        }
+        registerFolderElements("",document.body);
+
+        // Map fragments with unique names
+        this.fragmentLinks.forEach((link)=>{
+            // Find parent path
+            let path = "";            
+            let parent = link.fragment.element.parentNode;
+            while (parent && parent.parentNode != null) {
+                if (folderElements.includes(parent.nodeName)){
+                    path = newNodeMapping.get(parent);
+                    if (!path){
+                        console.warn("Weird", parent, link);
+                        throw new Error("FIXME: Cannot map fragment inside folder that wasn't detected properly");
+                    } 
+                    break;
+                }
+                parent = parent.parentNode;
+            }
+            
+            // Make fragment name unique
+            let fragmentPath;
+            let counter = 0;
+            do {
+                fragmentPath = path + "/" + sanitizeFileName(link.getRawName())+(counter>0?"_"+counter:"")+"."+link.getExtension();
+                counter++;
+            } while (newPathMapping.get(fragmentPath));
+            newPathMapping.set(fragmentPath,{node: link.fragment.element, link:link});
+            newNodeMapping.set(link.fragment.element,fragmentPath);            
         });
-
-
-        // Also add empty folders in case someone wants to add files to them from FS side
-        // TODO
         this.nodeMapping = newNodeMapping;
         this.pathMapping = newPathMapping;
 
@@ -448,31 +485,6 @@ class FragmentLink {
         }
     }
     
-    getRawElementPath(){
-        let self = this;
-        let child = this.fragment.element;
-        let parent = child.parentNode;
-        let domPath = [];
-        domPath.push({
-            node: child,
-            link: self,
-            name: self.getRawName()+"."+self.getExtension()
-        })
-        while (parent && parent.parentNode != null) {
-            if (folderElements.includes(parent.nodeName)){
-                let simpleName = getNodeName(parent);
-                domPath.push({
-                    node: parent,
-                    name: simpleName?simpleName:parent.nodeName.toLowerCase()
-                });
-            }
-            child = parent;
-            parent = parent.parentNode;
-        }
-        domPath.reverse()
-        return domPath;        
-    }
-
     getRawName(){
         let name = getNodeName(this.fragment.element);        
         return name?name:this.fragment.type.substring(this.fragment.type.lastIndexOf('/')+1);
@@ -485,11 +497,13 @@ class FragmentLink {
     }
 }
 
+
 function getNodeName(node){
     let name = node.hasAttribute("name")?node.getAttribute("name").trim():"";
     if (name.length>0) return name;
     let id = node.hasAttribute("id")?node.getAttribute("id").trim():"";
-    if (id.length>0) return "#"+id;    
+    if (id.length>0) return "#"+id;
+    if (folderElements.includes(node.nodeName)) return node.nodeName.toLowerCase();
     return false;
 }
 
@@ -538,29 +552,31 @@ async function sha256(input){
 
 FragmentFilesystemSync.DEBUG = true;
 if (FragmentFilesystemSync.isSupported()){
-    window.fragmentFilesystemSync = new FragmentFilesystemSync("FragmentFilesystemSync");
+    Fragment.addAllFragmentsLoadedCallback(()=>{
+        window.fragmentFilesystemSync = new FragmentFilesystemSync("FragmentFilesystemSync");
 
-    MenuSystem.MenuManager.registerMenuItem("Cauldron.File.Sync", {
-        label: "Fragments to Disk...",
-        tooltip: "Copy fragments to a local folder when the page loads and keep them in sync",    
-        group: "Codestrates",
-        groupOrder: 200,
-        order: 200,
-        checked: ()=>{
-            return fragmentFilesystemSync.isSyncing;
-        },
-        onAction: async (menuItem)=>{
-            // Toggle sync
-            if (fragmentFilesystemSync.isSyncing){
-                fragmentFilesystemSync.disableSyncing();
-                fragmentFilesystemSync.setDirectory();
-            } else {
-                let dir = await fragmentFilesystemSync.popupDirectoryPicker();
-                if (dir){
-                    await fragmentFilesystemSync.setDirectory(dir);
-                    fragmentFilesystemSync.enableSyncing();
+        MenuSystem.MenuManager.registerMenuItem("Cauldron.File.Sync", {
+            label: "Fragments to Disk...",
+            tooltip: "Copy fragments to a local folder when the page loads and keep them in sync",    
+            group: "Codestrates",
+            groupOrder: 200,
+            order: 200,
+            checked: ()=>{
+                return fragmentFilesystemSync.isSyncing;
+            },
+            onAction: async (menuItem)=>{
+                // Toggle sync
+                if (fragmentFilesystemSync.isSyncing){
+                    fragmentFilesystemSync.disableSyncing();
+                    fragmentFilesystemSync.setDirectory();
+                } else {
+                    let dir = await fragmentFilesystemSync.popupDirectoryPicker();
+                    if (dir){
+                        await fragmentFilesystemSync.setDirectory(dir);
+                        fragmentFilesystemSync.enableSyncing();
+                    }
                 }
             }
-        }
-    });    
+        });    
+    });
 }
