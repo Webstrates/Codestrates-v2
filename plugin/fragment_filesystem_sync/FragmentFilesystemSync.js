@@ -217,7 +217,7 @@ class FragmentFilesystemSync {
         setTimeout(()=>{this.fragmentLinks.push(new FragmentLink(fragmentElement.fragment))},1);
     }
     onWSFragmentElementRemoved(fragmentElement){
-        this.fragmentLinks = this.fragmentLinks.filter((link)=>link.fragment!==fragmentElement.fragment);
+        this.fragmentLinks = this.fragmentLinks.filter((link)=>link.fragment.element!==fragmentElement);
     }
 
     async synchronizeFSOperations(oldMeta){
