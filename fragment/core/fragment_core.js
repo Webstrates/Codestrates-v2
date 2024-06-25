@@ -1139,7 +1139,7 @@ class Fragment {
     }
 
     static addAllFragmentsLoadedCallback(callback) {
-        if (Fragment.allInstalledRun){
+        if (Fragment.initialLoadComplete){
             callback(); // callbacks added late are called immedaitely
         } else {
             Fragment.allFragmentsLoadedCallbacks.push(callback);
@@ -1149,6 +1149,7 @@ class Fragment {
 }; window.Fragment = Fragment;
 
 Fragment.allInstalledRun = false;
+Fragment.initialLoadComplete = false;
 Fragment.fragmentTypes = new Map();
 Fragment.unknownFragments = new Map();
 Fragment.disableAutorun = false;
@@ -1165,10 +1166,11 @@ if(window.disableCodestratesFragmentsAutorun === true) {
 Fragment.setupFragments();
 
 wpm.onAllInstalled(()=>{
+    Fragment.allInstalledRun = true;
     Fragment.runFragmentsLoaded().then(()=>{
+        Fragment.initialLoadComplete = true;
         Fragment.allFragmentsLoadedCallbacks.forEach((callback)=>{
             callback();
         });
     });
-    Fragment.allInstalledRun = true;
 });
