@@ -17,7 +17,7 @@ let extensionTypes = {
   "text/css": "css",
   "text/x-scss": "scss" 
 }
-let autoCloneAttributes = ["id","data-repository","auto","class","name"];
+let autoCloneAttributes = ["id","data-repository","auto","class"];
 
 class FragmentFilesystemSync {
     static isSupported(){
