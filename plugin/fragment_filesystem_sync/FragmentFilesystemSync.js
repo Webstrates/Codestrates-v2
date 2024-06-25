@@ -92,11 +92,27 @@ class FragmentFilesystemSync {
     }
 
     async popupDirectoryPicker(){
-        let directoryHandle = await window.showDirectoryPicker();
+        let directoryHandle = await window.showDirectoryPicker({ mode:"readwrite"});
         if (!directoryHandle) return;
 
-        let needConfirm = true; // STUB: Check if folder is empty then it is ok
-        // STUB: Check if folder already contains meta file for this webstrate then it is also ok
+        let needConfirm = true; 
+
+        // Check if folder is empty then it is ok
+        let fileCount = 0;
+        for await (const key of directoryHandle.keys()) {
+            fileCount++;
+        }
+        if (fileCount===0) needConfirm = false;
+
+        // Check if folder already contains meta file for this webstrate then it is also ok
+        try {
+            let metaFileHandle = await directoryHandle.getFileHandle("ffs.meta");
+            let metaFile = await metaFileHandle.getFile();
+            if (JSON.parse(await metaFile.text()).location==location.pathname) needConfirm = false;
+        } catch (ex){
+            // ignore
+        }
+
         if (needConfirm && !window.confirm('Warning: The contents of the folder '+directoryHandle.name+' you selected will be overwritten with the fragments in this codestrate. All its content will be deleted!')) return;
         return directoryHandle;
     }
@@ -146,7 +162,7 @@ class FragmentFilesystemSync {
         });
 
         // Every second synchronize contents
-        this.updater = async () => {
+        let ffsUpdateTick = async () => {
             let metaFileHandle = await this.directoryHandle.getFileHandle("ffs.meta", {create:true});
             let metaFile = await metaFileHandle.getFile();
             let oldMeta = {};
@@ -181,17 +197,19 @@ class FragmentFilesystemSync {
                 // Meta needs to be rewritten
                 await writeFile(metaFileHandle, JSON.stringify(meta));
             }            
-            setTimeout(self.updater,1000);
+            self.updater = setTimeout(ffsUpdateTick,1000);
         };
-        this.updater();
+        ffsUpdateTick();
 
         this.isSyncing = true;
     }
 
     disableSyncing(){
-        clearInterval(this.updater);
+        clearTimeout(this.updater);
         this.observer?.disconnect();
+        this.fragmentLinks = [];
         this.isSyncing = false;
+        console.log("Stopped FFS");
     }
 
     onWSFragmentElementAdded(fragmentElement){
@@ -216,7 +234,6 @@ class FragmentFilesystemSync {
             if (!parentNode){
                 console.log("Couldn't map parent folder, giving up on adding", path);
             } else {
-                // TODO: Handle wpm-packages
                 // TODO: Check for collisions/duplicates here
                 console.log("Adding to", parentNode, path);
                 let name = path.split("/");
@@ -550,10 +567,11 @@ async function sha256(input){
     return resultBytes.map(x => x.toString(16).padStart(2, '0')).join("");        
 }
 
-FragmentFilesystemSync.DEBUG = true;
+FragmentFilesystemSync.DEBUG = false;
 if (FragmentFilesystemSync.isSupported()){
     Fragment.addAllFragmentsLoadedCallback(()=>{
         window.fragmentFilesystemSync = new FragmentFilesystemSync("FragmentFilesystemSync");
+        window.FragmentFilesystemSync = FragmentFilesystemSync;
         
         // Register with Cauldron (when available)
         let item;
@@ -585,10 +603,8 @@ if (FragmentFilesystemSync.isSupported()){
 
         // If Cauldron is there already, run it, otherwise wait
         if (typeof MenuSystem != 'undefined') {
-            console.log("Loading wi m")
             registerMenuItem();
         } else {
-            console.log("Loadin m")
             EventSystem.registerEventCallback('Cauldron.OnInit', registerMenuItem);
         }
 
