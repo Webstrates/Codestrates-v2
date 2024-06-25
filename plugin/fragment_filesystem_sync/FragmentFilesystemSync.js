@@ -554,29 +554,48 @@ FragmentFilesystemSync.DEBUG = true;
 if (FragmentFilesystemSync.isSupported()){
     Fragment.addAllFragmentsLoadedCallback(()=>{
         window.fragmentFilesystemSync = new FragmentFilesystemSync("FragmentFilesystemSync");
-
-        MenuSystem.MenuManager.registerMenuItem("Cauldron.File.Sync", {
-            label: "Fragments to Disk...",
-            tooltip: "Copy fragments to a local folder when the page loads and keep them in sync",    
-            group: "Codestrates",
-            groupOrder: 200,
-            order: 200,
-            checked: ()=>{
-                return fragmentFilesystemSync.isSyncing;
-            },
-            onAction: async (menuItem)=>{
-                // Toggle sync
-                if (fragmentFilesystemSync.isSyncing){
-                    fragmentFilesystemSync.disableSyncing();
-                    fragmentFilesystemSync.setDirectory();
-                } else {
-                    let dir = await fragmentFilesystemSync.popupDirectoryPicker();
-                    if (dir){
-                        await fragmentFilesystemSync.setDirectory(dir);
-                        fragmentFilesystemSync.enableSyncing();
+        
+        // Register with Cauldron (when available)
+        let item;
+        let registerMenuItem = function registerMenuItem(){
+            if (!item) item = MenuSystem.MenuManager.registerMenuItem("Cauldron.File.Sync", {
+                label: "Fragments to Disk...",
+                tooltip: "Copy fragments to a local folder when the page loads and keep them in sync",    
+                group: "Codestrates",
+                groupOrder: 200,
+                order: 200,
+                checked: ()=>{
+                    return fragmentFilesystemSync.isSyncing;
+                },
+                onAction: async (menuItem)=>{
+                    // Toggle sync
+                    if (fragmentFilesystemSync.isSyncing){
+                        fragmentFilesystemSync.disableSyncing();
+                        fragmentFilesystemSync.setDirectory();
+                    } else {
+                        let dir = await fragmentFilesystemSync.popupDirectoryPicker();
+                        if (dir){
+                            await fragmentFilesystemSync.setDirectory(dir);
+                            fragmentFilesystemSync.enableSyncing();
+                        }
                     }
                 }
-            }
-        });    
+            });                
+        }
+
+        // If Cauldron is there already, run it, otherwise wait
+        if (typeof MenuSystem != 'undefined') {
+            console.log("Loading wi m")
+            registerMenuItem();
+        } else {
+            console.log("Loadin m")
+            EventSystem.registerEventCallback('Cauldron.OnInit', registerMenuItem);
+        }
+
+        wpm.onRemoved(({detail: packageName})=>{
+            fragmentFilesystemSync.disableSyncing();
+            item?.delete();
+        });        
     });
 }
+
