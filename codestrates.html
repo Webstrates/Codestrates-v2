@@ -4548,10 +4548,8 @@ class MonacoEditor extends Editor {
             });
 
             let theme = "vs";
-
-            if (self.options.theme === "dark") {
-                theme = "vs-dark";
-            }
+            if (self.options.theme) theme = self.options.theme;
+            if (self.options.theme === "dark") theme = "vs-dark";
 
             monaco.languages.json.jsonDefaults.diagnosticsOptions.enableSchemaRequest = true;
 
