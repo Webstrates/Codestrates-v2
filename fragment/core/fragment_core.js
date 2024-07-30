@@ -717,7 +717,6 @@ class Fragment {
         this.autoDomReady = false;
 
         return new Promise(async (resolve, reject)=>{
-
             try {
                 let autoDomContent = await this.createAutoDom();
 
@@ -728,7 +727,7 @@ class Fragment {
 
                     //Fix missing classes
                     self.element.classList.forEach((c)=>{
-                        oldTransient[0].addClass(c);
+                        if (!oldTransient[0].classList.contains(c)) oldTransient[0].classList.add(c);                        
                     });
 
                     try {
