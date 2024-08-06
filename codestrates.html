@@ -1197,7 +1197,7 @@ class Fragment {
      * @param {cQuery} fragment - the fragment to set up
      */
     static setupFragment(fragment) {
-        if (fragment.fragment != null) return; //Already setup as fragment            
+        if (fragment[0].fragment != null) return; //Already setup as fragment            
 
         let fragmentType = fragment[0].getAttribute("data-type");
         if (!Fragment.fragmentTypes.has(fragmentType)) {
