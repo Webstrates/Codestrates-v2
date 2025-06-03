@@ -93,6 +93,7 @@ class MonacoEditor extends Editor {
                 break;
 
             case "text/x-typescript":
+            case "text/slopscript+babel":
                 language = "typescript";
                 break;
 
@@ -412,6 +413,7 @@ class MonacoEditor extends Editor {
             "text/ruby",
             "text/x-scss",
             "text/x-typescript",
+            "text/slopscript+babel",
             "application/x-lua",
             "wpm/descriptor",
             "model/vnd.usda",
