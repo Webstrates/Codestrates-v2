@@ -1997,6 +1997,12 @@ wpm.onRemoved(() => {
 class JavascriptBabelFragment extends Fragment {
     constructor(html) {
         super(html);
+        this.lastRaw = null;
+    }
+    
+    isUniqueModules(){
+        return true;
+        return this.element.getAttribute("unique-modules");
     }
 
     /**
@@ -2008,51 +2014,78 @@ class JavascriptBabelFragment extends Fragment {
     async require() {
         let self = this;
         
-        // Support for css-like imports from other fragments
-        function fragmentImports({types,template}){
-            return {
-                visitor: {
-                    ImportDeclaration(path,state){
-                        if (path?.node?.source?.value?.startsWith("#")){
-                            let fragmentString = path.node.source.value.replaceAll("\"","\\\"");
-                            let specifierString = "throw new Error('Couldnt parse import specifier, try something simpler like import {Thing} from \"...\"')";
-                            if (path.node.specifiers.length===1 && path.node.specifiers[0].type==="ImportNamespaceSpecifier"){
-                                specifierString = "var "+path.node.specifiers[0].local.name+" = await fragment.require();";
-                                path.scope.removeBinding(path.node.specifiers[0].local.name); // Fix Babel not removing old bindings from scope
-                            } else if (path.node.specifiers.length===1 && path.node.specifiers[0].type==="ImportDefaultSpecifier"){
-                                specifierString = "var "+path.node.specifiers[0].local.name+" = (await fragment.require()).default;";
-                                path.scope.removeBinding(path.node.specifiers[0].local.name); // Fix Babel not removing old bindings from scope
-                            } else {
-                                let specifiers = path.node.specifiers.map(specifier=>{
-                                    let assignment = "var "+specifier.local.name+"=wrapper."+specifier.imported.name;
-                                    path.scope.removeBinding(specifier.local.name); // Fix Babel not removing old bindings from scope
-                                    return assignment;
-                                });
-                                specifierString = "let wrapper = await fragment.require();"+specifiers.join(";");
+        // Check if we already have a compiled version in memory and use that
+        if ((!this.isUniqueModules()) && this.currentModule && this.raw == this.lastRaw){
+            return this.currentModule;
+        }
+        
+        let processedCode = null;
+        if (typeof AutoDOMCache !== "undefined"){
+            processedCode = await AutoDOMCache.get(self);
+        }
+             
+        if (processedCode==null){
+            // Support for css-like imports from other fragments
+            function fragmentImports({types,template}){
+                return {
+                    visitor: {
+                        ImportDeclaration(path,state){
+                            if (path?.node?.source?.value?.startsWith("#")){
+                                let fragmentString = path.node.source.value.replaceAll("\"","\\\"");
+                                let specifierString = "throw new Error('Couldnt parse import specifier, try something simpler like import {Thing} from \"...\"')";
+                                if (path.node.specifiers.length===1 && path.node.specifiers[0].type==="ImportNamespaceSpecifier"){
+                                    specifierString = "var "+path.node.specifiers[0].local.name+" = await fragment.require();";
+                                    path.scope.removeBinding(path.node.specifiers[0].local.name); // Fix Babel not removing old bindings from scope
+                                } else if (path.node.specifiers.length===1 && path.node.specifiers[0].type==="ImportDefaultSpecifier"){
+                                    specifierString = "var "+path.node.specifiers[0].local.name+" = (await fragment.require()).default;";
+                                    path.scope.removeBinding(path.node.specifiers[0].local.name); // Fix Babel not removing old bindings from scope
+                                } else {
+                                    let specifiers = path.node.specifiers.map(specifier=>{
+                                        let assignment = "var "+specifier.local.name+"=wrapper."+specifier.imported.name;
+                                        path.scope.removeBinding(specifier.local.name); // Fix Babel not removing old bindings from scope
+                                        return assignment;
+                                    });
+                                    specifierString = "let wrapper = await fragment.require();"+specifiers.join(";");
+                                }
+
+                                let replacementProgram = Babel.transform(`
+                                    {try {
+                                        let fragment = Fragment.one("`+fragmentString+`");
+                                        if (!fragment) throw new Error("Couldn't find fragment");
+                                        `+specifierString+`
+                                    } catch (ex){
+                                        throw new Error("Unable to import '`+path.node.source.value.replaceAll("\"","")+"' on line "+path.node.loc.start.line+`: "+ex);
+                                    }}
+                                `, {ast:true,code:false});
+                                path.replaceWith(replacementProgram.ast.program.body[0]);
                             }
-                            
-                            let replacementProgram = Babel.transform(`
-                                {try {
-                                    let fragment = Fragment.one("`+fragmentString+`");
-                                    if (!fragment) throw new Error("Couldn't find fragment");
-                                    `+specifierString+`
-                                } catch (ex){
-                                    throw new Error("Unable to import '`+path.node.source.value.replaceAll("\"","")+"' on line "+path.node.loc.start.line+`: "+ex);
-                                }}
-                            `, {ast:true,code:false});
-                            path.replaceWith(replacementProgram.ast.program.body[0]);
                         }
                     }
-                }
-            };
+                };
+            }
+            
+            let compiled = Babel.transform(self.raw,{presets:["react"], ast:true, code:true, plugins:[fragmentImports]});
+            processedCode = compiled.code;
+            
+            // Store in cache for later too
+            if (processedCode && typeof AutoDOMCache !== "undefined"){
+                 await AutoDOMCache.set(self, processedCode);
+            }            
         }
-        let ast = Babel.transform(self.raw+"/*"+Math.random()+"*/",{presets:["react"], ast:true, code:false, plugins:[fragmentImports]}).ast;
 
-        // Turn into real JS and return it
-        let processedCode = Babel.transformFromAst(ast,null, {presets:["react"]}).code;
-        processedCode = "let fragmentSelfReference = Fragment.one('code-fragment[transient-fragment-uuid=\""+this.uuid+"\"');"+processedCode;
-        //console.log(processedCode);
+        if (processedCode==null){
+            throw new Error("Code is null?");
+        }
+
+        processedCode = "let fragmentSelfReference = Fragment.one('code-fragment[transient-fragment-uuid=\""+this.uuid+"\"');"+processedCode;       
+        if (this.isUniqueModules()){
+            processedCode += "/*"+Math.random()+"*/";
+        }
+        
+        
         let output = await import(`data:text/javascript,${encodeURIComponent(processedCode)}`);
+        this.currentModule = output;
+        this.lastRaw = this.raw;
         return output;
     }
 
