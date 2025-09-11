@@ -4575,80 +4575,98 @@ class MonacoEditor extends Editor {
             language = MonacoEditor.extraTypes.get(self.fragment.type);
         }
 
-        requirejs(["vs/editor/editor.main"], (monaco) => {
-            EventSystem.triggerEvent("Codestrates.Editor.Monaco.Loaded", {
-                monaco: monaco
-            });
+        // FIXME: Using Babel fragments can cause "Mismatched anonymous define() module"
+        // errors in requirejs. Each attempt removes one mismatched define.
+        let attemptCount = 0;
+        const maxAttempts = 5;
+        let loaded = false;
 
-            let theme = "vs";
-            if (self.options.theme) theme = self.options.theme;
-            if (self.options.theme === "dark") theme = "vs-dark";
+        while (attemptCount < maxAttempts && !loaded) {
+            try {
+                requirejs(["vs/editor/editor.main"], (monaco) => {
+                    EventSystem.triggerEvent("Codestrates.Editor.Monaco.Loaded", {
+                        monaco: monaco
+                    });
 
-            monaco.languages.json.jsonDefaults.diagnosticsOptions.enableSchemaRequest = true;
+                    let theme = "vs";
+                    if (self.options.theme) theme = self.options.theme;
+                    if (self.options.theme === "dark") theme = "vs-dark";
 
-            self.editor = monaco.editor.create(self.editorDiv[0], {
-                value: this.fragment.raw,
-                language: language,
-                theme: theme,
-                minimap: {
-                    enabled: false
-                },
-                automaticLayout: false,
-                fixedOverflowWidgets: true,
-                contextmenu: false,
-                scrollBeyondLastLine: false,
-                scrollBeyondLastColumn: 0,
-                occurrencesHighlight: false,
-                selectionHighlight: false,
-                accessibilitySupport: "off",
-                folding: false,
-                guides: {
-                    bracketPairs: true
-                },
-                readOnly: this.options.readOnly,
-                bracketPairColorization: {
-                    enabled: true
-                },
-                scrollbar: {
-                    alwaysConsumeMouseWheel: false,
-                    horizontal: 'auto',
-                    vertical: 'auto',
-                    horizontalScrollbarSize: 17
-                }
-            });
+                    monaco.languages.json.jsonDefaults.diagnosticsOptions.enableSchemaRequest = true;
 
-            self.editor.getModel().setEOL(0);
+                    self.editor = monaco.editor.create(self.editorDiv[0], {
+                        value: this.fragment.raw,
+                        language: language,
+                        theme: theme,
+                        minimap: {
+                            enabled: false
+                        },
+                        automaticLayout: false,
+                        fixedOverflowWidgets: true,
+                        contextmenu: false,
+                        scrollBeyondLastLine: false,
+                        scrollBeyondLastColumn: 0,
+                        occurrencesHighlight: false,
+                        selectionHighlight: false,
+                        accessibilitySupport: "off",
+                        folding: false,
+                        guides: {
+                            bracketPairs: true
+                        },
+                        readOnly: this.options.readOnly,
+                        bracketPairColorization: {
+                            enabled: true
+                        },
+                        scrollbar: {
+                            alwaysConsumeMouseWheel: false,
+                            horizontal: 'auto',
+                            vertical: 'auto',
+                            horizontalScrollbarSize: 17
+                        }
+                    });
 
-            if (self.options.mode === "full") {
-                //Setup resizeing for all the lines
+                    self.editor.getModel().setEOL(0);
 
-                self.editor.getModel().onDidChangeContent(()=>{self.updateSize();});
-                self.editor.getModel().onDidChangeDecorations(()=>{
-                    setTimeout(()=>{
+                    if (self.options.mode === "full") {
+                        //Setup resizeing for all the lines
+
+                        self.editor.getModel().onDidChangeContent(()=>{self.updateSize();});
+                        self.editor.getModel().onDidChangeDecorations(()=>{
+                            setTimeout(() => {
+                                self.updateSize();
+                            }, 0);
+                        });
+
                         self.updateSize();
-                    }, 0);
-                });
+                    }
 
-                self.updateSize();
+                    self.editor.getModel().onDidChangeContent((evt) => {
+                        self.handleModelChanged();
+                    });
+
+                    self.editor.onDidChangeCursorSelection((evt)=>{
+                        self.triggerCursorSelection({
+                            startLine: evt.selection.startLineNumber,
+                            startColumn: evt.selection.startColumn,
+                            endLine: evt.selection.endLineNumber,
+                            endColumn: evt.selection.endColumn,
+                            positionLine: evt.selection.positionLineNumber,
+                            positionColumn: evt.selection.positionColumn
+                        });
+                    });
+
+                    self.triggerEditorOpened();
+                });
+                loaded = true;
+            } catch (error) {
+                attemptCount++;
+                if (attemptCount < maxAttempts && error.message && error.message.includes('Mismatched anonymous define()')) {
+                    console.log(`Monaco loading attempt ${attemptCount} failed, retrying...`);
+                } else {
+                    console.error('Failed to load Monaco after retries:', error);
+                }
             }
-
-            self.editor.getModel().onDidChangeContent((evt) => {
-                self.handleModelChanged();
-            });
-
-            self.editor.onDidChangeCursorSelection((evt)=>{
-                self.triggerCursorSelection({
-                    startLine: evt.selection.startLineNumber,
-                    startColumn: evt.selection.startColumn,
-                    endLine: evt.selection.endLineNumber,
-                    endColumn: evt.selection.endColumn,
-                    positionLine: evt.selection.positionLineNumber,
-                    positionColumn: evt.selection.positionColumn
-                });
-            });
-
-            self.triggerEditorOpened();
-        });
+        }
     }
 
     focus() {
